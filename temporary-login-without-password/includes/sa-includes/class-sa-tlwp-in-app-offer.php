@@ -202,11 +202,8 @@ class SA_TLWP_In_App_Offer {
 		?>
 		<style type="text/css">
 			.sa_offer {
-				margin: 1em auto;
-				text-align: center;
 				font-size: 1.2em;
 				line-height: 1em;
-				padding: 1em;
 			}
 			.sa_offer_content img {
 				width: 65%;
@@ -219,12 +216,16 @@ class SA_TLWP_In_App_Offer {
 				text-align: center;
 				letter-spacing: 2px;
 			}
+			.sa_offer p {
+				padding:1em;
+			}
 		</style>
 		<div class="sa_offer">
 			<div class="sa_offer_content">
-				<a href="https://www.icegram.com/?utm_source=in_app&utm_medium=<?php echo esc_attr( $this->prefix ); ?>_banner&utm_campaign=<?php echo esc_attr( $this->campaign ); ?>" target="_blank">
-					<img src="<?php echo esc_url( plugins_url( 'sa-includes/images/ig_bfcm2022.png', $this->plugin_file ) ); ?>" />
-				</a>
+				<p class="notice notice-success"><strong><?php echo esc_html__( '🔥 Black Friday & Cyber Monday Sale is Here! 🔥 Get up to 50% OFF on our brands!', 'temporary-login-without-password' ); ?></strong> 
+				 [<strong><a href="https://www.icegram.com/?utm_source=in_app&utm_medium=<?php echo esc_attr( $this->prefix ); ?>_banner&utm_campaign=<?php echo esc_attr( $this->campaign ); ?>" target="_blank"><?php echo esc_html__( 'Icegram', 'temporary-login-without-password' ); ?></a></strong>] - 
+				[<strong><a href="https://www.storeapps.org/?utm_source=in_app&utm_medium=<?php echo esc_attr( $this->prefix ); ?>_banner&utm_campaign=<?php echo esc_attr( $this->campaign ); ?>" target="_blank"><?php echo esc_html__( 'StoreApps', 'temporary-login-without-password' ); ?></a></strong>] - 
+				[<strong><a href="https://www.putler.com/?utm_source=in_app&utm_medium=<?php echo esc_attr( $this->prefix ); ?>_banner&utm_campaign=<?php echo esc_attr( $this->campaign ); ?>" target="_blank"><?php echo esc_html__( 'Putler', 'temporary-login-without-password' ); ?></a></strong>]</p>
 				<div class="sa_dismiss"> <!-- Do not change this class -->
 					<a href="javascript:void(0)" style="color: black; text-decoration: none;" title="<?php echo esc_attr__( 'Dismiss', 'temporary-login-without-password' ); ?>"><?php echo esc_html__( 'Hide this', 'temporary-login-without-password' ); ?></a>
 				</div>

@@ -695,10 +695,10 @@ class Wp_Temporary_Login_Without_Password_Admin {
 			$args     = array(
 				'file'           => plugin_dir_path( dirname( __FILE__ ) ) . 'includes/sa-includes/',
 				'prefix'         => 'wtlwp',              // prefix/slug of your plugin.
-				'option_name'    => 'ig_wtlwp_offer_bfcm_2022',
-				'campaign'       => 'ig_offer_bfcm_2022',
-				'start'          => '2022-11-23 12:30:00',
-				'end'            => '2022-11-30 12:30:00',
+				'option_name'    => 'ig_wtlwp_offer_bfcm_2024',
+				'campaign'       => 'ig_offer_bfcm_2024',
+				'start'          => '2024-11-26 12:30:00',
+				'end'            => '2024-12-05 12:30:00',
 				'is_plugin_page' => ( ! empty( $get_page ) && 'wp-temporary-login-without-password' === $get_page ) ? true : false,   // page where you want to show offer, do not send this if no plugin page is there and want to show offer on Products page.
 			);
 			$sa_offer = SA_TLWP_In_App_Offer::get_instance( $args );

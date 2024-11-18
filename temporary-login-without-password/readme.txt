@@ -4,8 +4,8 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: temporary access, developer access, passwordless login, magic pin, secure login
 Requires at least: 3.0.1
 Requires PHP: 5.3
-Tested up to: 6.4.1
-Stable tag: 1.8.3
+Tested up to: 6.7
+Stable tag: 1.8.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -171,12 +171,15 @@ Yes. There is no limit to create temporary logins. You can create as many tempor
 
 == Upgrade Notice ==
 
-= 1.8.3 =
+= 1.8.4 =
 
-* Fix: PHP Warning "Deprecated: trim(): Passing null to parameter #1 ($string) of type string is deprecated"
-* Update: Compatibility test with WordPress 6.4.1
+* Update: Compatibility test with WordPress 6.7
 
 == Changelog ==
+
+**1.8.4 [2024-11-18]**
+
+* Update: Compatibility test with WordPress 6.7
 
 **1.8.3 [2023-12-06]**
 
