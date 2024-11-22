@@ -3,7 +3,7 @@
  * Plugin Name:       Temporary Login Without Password
  * Plugin URI:        http://www.storeapps.org/create-secure-login-without-password-for-wordpress/
  * Description:       Create a temporary login link with any role using which one can access to your sytem without username and password for limited period of time.
- * Version:           1.8.4
+ * Version:           1.8.5
  * Author:            StoreApps
  * Author URI:        https://www.storeapps.org/
  * Requires at least: 3.0.1
@@ -46,7 +46,7 @@ function get_wtlwp_plugin_data() {
     if ( ! function_exists( 'get_plugin_data' ) ) {
         require_once ABSPATH . 'wp-admin/includes/plugin.php';
     }
-    return get_plugin_data( WTLWP_PLUGIN_FILE );
+    return get_plugin_data( WTLWP_PLUGIN_FILE, true, false );
 }
 
 /**
