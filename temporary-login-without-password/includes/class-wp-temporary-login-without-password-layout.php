@@ -1,4 +1,10 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Layout' ) ) {
 /**
  * Plugin Layout Class
  *
@@ -193,4 +199,5 @@ class Wp_Temporary_Login_Without_Password_Layout {
 		return $action_row;
 	}
 
+}
 }

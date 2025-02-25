@@ -85,6 +85,7 @@ class Wp_Temporary_Login_Without_Password_Public {
 
 				$temporary_user_id = $temporary_user->ID;
 				$do_login          = true;
+				$do_login = apply_filters( 'wtlwp_login_pre_check', $do_login, $temporary_user_id); //Pre-check before login
 				if ( is_user_logged_in() ) {
 					$current_user_id = get_current_user_id();
 					if ( $temporary_user_id !== $current_user_id ) {
@@ -93,7 +94,7 @@ class Wp_Temporary_Login_Without_Password_Public {
 						$do_login = false;
 					}
 				}
-
+				
 				if ( $do_login ) {
 					$temporary_user_login = $temporary_user->login;
 					update_user_meta( $temporary_user_id, '_wtlwp_last_login', Wp_Temporary_Login_Without_Password_Common::get_current_gmt_timestamp() ); // phpcs:ignore
@@ -113,17 +114,17 @@ class Wp_Temporary_Login_Without_Password_Public {
 
 					update_user_meta( $temporary_user_id, $login_count_key, $login_count );
 					do_action( 'wp_login', $temporary_user_login, $temporary_user );
+					do_action( 'wtlwp_after_login_success', $temporary_user_id);
 				}
 
 				$request_uri = Wp_Temporary_Login_Without_Password_Common::get_request_uri();
 
 				$redirect_to_url = apply_filters( 'tlwp_login_redirect', apply_filters( 'login_redirect', network_site_url( remove_query_arg( 'wtlwp_token', $request_uri ) ), false, $temporary_user ), $temporary_user );
-
+				
 			} else {
 				// Temporary user not found?? Redirect to home page.
 				$redirect_to_url = home_url();
 			}
-
 			wp_safe_redirect( $redirect_to_url ); // Redirect to given url after successful login.
 			exit();
 		}

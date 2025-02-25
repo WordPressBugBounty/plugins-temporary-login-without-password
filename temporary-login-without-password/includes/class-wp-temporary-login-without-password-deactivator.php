@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Deactivator' ) ) {
 /**
  * Deactivator Class
  *
@@ -47,4 +52,5 @@ class Wp_Temporary_Login_Without_Password_Deactivator {
 		update_option( 'temporary_logins_data', $temporary_logins_data, $add );
 	}
 
+}
 }

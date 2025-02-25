@@ -10,6 +10,7 @@ if ( ! function_exists( 'tlwp_get_additional_info' ) ) {
 	 * Get TLWP specific information
 	 *
 	 * @param $additional_info
+	 * 
 	 * @param bool $system_info
 	 *
 	 * @return mixed
@@ -368,5 +369,3 @@ if ( ! function_exists( 'tlwp_show_feature_survey' ) ) {
 }
 
 add_action( 'admin_notices', 'tlwp_show_feature_survey' );
-
-

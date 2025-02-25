@@ -1,4 +1,10 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Loader' ) ) {
+
 /**
  * Register all actions and filters for the plugin
  *
@@ -123,4 +129,5 @@ class Wp_Temporary_Login_Without_Password_Loader {
 		}
 	}
 
+}
 }

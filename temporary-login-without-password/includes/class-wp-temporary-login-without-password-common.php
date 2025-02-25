@@ -1,5 +1,9 @@
 <?php
-
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 /**
  * Class Wp_Temporary_Login_Without_Password_Common
  */
@@ -59,7 +63,7 @@ class Wp_Temporary_Login_Without_Password_Common {
 	 */
 	public static function create_new_user( $data ) {
 
-		if ( false === Wp_Temporary_Login_Without_Password_Common::can_manage_wtlwp() ) {
+		if ( false === self::can_manage_wtlwp() ) {
 			return 0;
 		}
 
@@ -68,10 +72,11 @@ class Wp_Temporary_Login_Without_Password_Common {
 		);
 
 		$expiry_option = ! empty( $data['expiry'] ) ? $data['expiry'] : 'day';
+		$max_login_limit = Wp_Temporary_Login_Without_Password_Common ::get_max_login_limit($data);
 		$date          = ! empty( $data['custom_date'] ) ? $data['custom_date'] : '';
 
-		$password    = Wp_Temporary_Login_Without_Password_Common::generate_password();
-		$username    = Wp_Temporary_Login_Without_Password_Common::create_username( $data );
+		$password    = self::generate_password();
+		$username    = self::create_username( $data );
 		$first_name  = isset( $data['user_first_name'] ) ? sanitize_text_field( $data['user_first_name'] ) : '';
 		$last_name   = isset( $data['user_last_name'] ) ? sanitize_text_field( $data['user_last_name'] ) : '';
 		$email       = isset( $data['user_email'] ) ? sanitize_email( $data['user_email'] ) : '';
@@ -115,9 +120,10 @@ class Wp_Temporary_Login_Without_Password_Common {
 			}
 
 			update_user_meta( $user_id, '_wtlwp_user', true );
-			update_user_meta( $user_id, '_wtlwp_created', Wp_Temporary_Login_Without_Password_Common::get_current_gmt_timestamp() );
-			update_user_meta( $user_id, '_wtlwp_expire', Wp_Temporary_Login_Without_Password_Common::get_user_expire_time( $expiry_option, $date ) );
-			update_user_meta( $user_id, '_wtlwp_token', Wp_Temporary_Login_Without_Password_Common::generate_wtlwp_token( $user_id ) );
+			update_user_meta( $user_id, '_wtlwp_created', self::get_current_gmt_timestamp() );
+			update_user_meta( $user_id, '_wtlwp_expire', self::get_user_expire_time( $expiry_option, $date ) );
+			update_user_meta( $user_id, '_wtlwp_max_login_limit', $max_login_limit );
+			update_user_meta( $user_id, '_wtlwp_token', self::generate_wtlwp_token( $user_id ) );
 			update_user_meta( $user_id, '_wtlwp_redirect_to', $redirect_to );
 
 			update_user_meta( $user_id, 'show_welcome_panel', 0 );
@@ -143,13 +149,13 @@ class Wp_Temporary_Login_Without_Password_Common {
 	 */
 	public static function update_user( $user_id = 0, $data = array() ) {
 
-		if ( false === Wp_Temporary_Login_Without_Password_Common::can_manage_wtlwp() || ( 0 === $user_id ) ) {
+		if ( false === self::can_manage_wtlwp() || ( 0 === $user_id ) ) {
 			return 0;
 		}
 
 		$expiry_option = ! empty( $data['expiry'] ) ? $data['expiry'] : 'day';
+		$max_login_limit = Wp_Temporary_Login_Without_Password_Common ::get_max_login_limit($data);
 		$date          = ! empty( $data['custom_date'] ) ? $data['custom_date'] : '';
-
 		$first_name  = isset( $data['user_first_name'] ) ? sanitize_text_field( $data['user_first_name'] ) : '';
 		$last_name   = isset( $data['user_last_name'] ) ? sanitize_text_field( $data['user_last_name'] ) : '';
 		$redirect_to = isset( $data['redirect_to'] ) ? sanitize_text_field( $data['redirect_to'] ) : '';
@@ -178,10 +184,10 @@ class Wp_Temporary_Login_Without_Password_Common {
 			grant_super_admin( $user_id );
 		}
 
-		update_user_meta( $user_id, '_wtlwp_updated', Wp_Temporary_Login_Without_Password_Common::get_current_gmt_timestamp() );
-		update_user_meta( $user_id, '_wtlwp_expire', Wp_Temporary_Login_Without_Password_Common::get_user_expire_time( $expiry_option, $date ) );
+		update_user_meta( $user_id, '_wtlwp_updated', self::get_current_gmt_timestamp() );
+		update_user_meta( $user_id, '_wtlwp_expire', self::get_user_expire_time( $expiry_option, $date ) );
+		update_user_meta( $user_id, '_wtlwp_max_login_limit', $max_login_limit );
 		update_user_meta( $user_id, '_wtlwp_redirect_to', $redirect_to );
-
 		//set locale
 		$locale = ! empty( $data['locale'] ) ? $data['locale'] : 'en_US';
 		update_user_meta( $user_id, 'locale', $locale );
@@ -284,7 +290,7 @@ class Wp_Temporary_Login_Without_Password_Common {
 					$r .= "value='" . esc_attr( $key ) . "'>$label</option>";
 				}
 
-				$r .= "</optgroup>";
+				$r .= '</optgroup>';
 
 			}
 
@@ -574,7 +580,7 @@ class Wp_Temporary_Login_Without_Password_Common {
 		$str  = $user_id . microtime() . uniqid( '', true );
 		$salt = substr( md5( $str ), 0, 32 );
 
-		return hash( "sha256", $str . $salt );
+		return hash( 'sha256', $str . $salt );
 	}
 
 	/**
@@ -822,7 +828,7 @@ class Wp_Temporary_Login_Without_Password_Common {
 			return __( 'Expired', 'temporary-login-without-password' );
 		} else {
 
-			$expiry_options = Wp_Temporary_Login_Without_Password_Common::get_expiry_options();
+			$expiry_options = self::get_expiry_options();
 
 			return ! empty( $expiry_options[ $time ] ) ? $expiry_options[ $time ]['expiry_label'] : '';
 		}
@@ -851,7 +857,7 @@ class Wp_Temporary_Login_Without_Password_Common {
 	 */
 	public static function delete_temporary_logins() {
 
-		$temporary_logins = Wp_Temporary_Login_Without_Password_Common::get_temporary_logins();
+		$temporary_logins = self::get_temporary_logins();
 
 		if ( count( $temporary_logins ) > 0 ) {
 			foreach ( $temporary_logins as $user ) {
@@ -930,21 +936,23 @@ class Wp_Temporary_Login_Without_Password_Common {
 
 				$created_on  = get_user_meta( $user_id, '_wtlwp_created', true );
 				$expire_on   = get_user_meta( $user_id, '_wtlwp_expire', true );
+				$max_login_limit   = get_user_meta( $user_id, '_wtlwp_max_login_limit', true );
 				$wtlwp_token = get_user_meta( $user_id, '_wtlwp_token', true );
 				$redirect_to = get_user_meta( $user_id, '_wtlwp_redirect_to', true );
 				$user_locale = get_user_meta( $user_id, 'locale', true );
 
 				$user_data = array(
-					'is_tlwp_user' => $is_tlwp_user,
-					'email'        => $email,
-					'first_name'   => $first_name,
-					'last_name'    => $last_name,
-					'created_on'   => $created_on,
-					'expire_on'    => $expire_on,
-					'wtlwp_token'  => $wtlwp_token,
-					'role'         => $role,
-					'locale'       => $user_locale,
-					'redirect_to'  => $redirect_to
+					'is_tlwp_user'   => $is_tlwp_user,
+					'email'          => $email,
+					'first_name'     => $first_name,
+					'last_name'      => $last_name,
+					'created_on'     => $created_on,
+					'expire_on'      => $expire_on,
+					'max_login_limit'=>$max_login_limit,
+					'wtlwp_token'    => $wtlwp_token,
+					'role'           => $role,
+					'locale'         => $user_locale,
+					'redirect_to'    => $redirect_to
 				);
 			}
 
@@ -1012,7 +1020,7 @@ class Wp_Temporary_Login_Without_Password_Common {
 		$mailto_subject       = __( 'Temporary Login Link', 'temporary-login-without-password' );
 		$mailto_body          = "$mailto_greeting $double_line_break $mailto_instruction $double_line_break $temporary_login_link $double_line_break";
 
-		return __( sprintf( "mailto:%s?subject=%s&body=%s", $email, $mailto_subject, $mailto_body ), 'temporary-login-without-password' );
+		return __( sprintf( 'mailto:%s?subject=%s&body=%s', $email, $mailto_subject, $mailto_body ), 'temporary-login-without-password' );
 	}
 
 	/**
@@ -1141,12 +1149,12 @@ class Wp_Temporary_Login_Without_Password_Common {
 				$page = (array) $page;
 				// preselect specified role
 				if ( $selected == $page['ID'] ) {
-					$r .= "\n\t<option selected='selected' value='" . esc_attr( $page['ID'] ) . "'>" . $page['post_title'] . "</option>";
+					$r .= "\n\t<option selected='selected' value='" . esc_attr( $page['ID'] ) . "'>" . $page['post_title'] . '</option>';
 				} else {
-					$r .= "\n\t<option value='" . esc_attr( $page['ID'] ) . "'>" . $page['post_title'] . "</option>";
+					$r .= "\n\t<option value='" . esc_attr( $page['ID'] ) . "'>" . $page['post_title'] . '</option>';
 				}
 			}
-			$r .= "</optgroup>";
+			$r .= '</optgroup>';
 		}
 
 		echo $r;
@@ -1278,4 +1286,24 @@ class Wp_Temporary_Login_Without_Password_Common {
 
 		return sanitize_user( strtolower( $random_username ), true );
 	}
+
+	public static function get_default_max_login_limit(){
+		$tlwp_settings     = maybe_unserialize( get_option( 'tlwp_settings', array() ) );
+		$default_max_login_limit   = ( !empty( $tlwp_settings ) && isset( $tlwp_settings['default_max_login_limit'] ) ) ? $tlwp_settings['default_max_login_limit'] : WTLWP_DEFAULT_MAX_LOGIN_LIMIT;
+
+		return $default_max_login_limit;
+	}
+	public static function get_max_login_limit($data = array()) {
+		$default_max_login_limit = Wp_Temporary_Login_Without_Password_Common::get_default_max_login_limit();
+	
+		$max_login_limit = !empty($data['max_login_limit']) ? $data['max_login_limit'] : (defined('WTLWP_DEFAULT_MAX_LOGIN_LIMIT') ? WTLWP_DEFAULT_MAX_LOGIN_LIMIT : $default_max_login_limit);
+	
+		if (empty($max_login_limit) || $max_login_limit == WTLWP_DEFAULT_MAX_LOGIN_LIMIT) {
+			$max_login_limit = $default_max_login_limit;
+		}
+	
+		return $max_login_limit; 
+	}
+	
+}
 }

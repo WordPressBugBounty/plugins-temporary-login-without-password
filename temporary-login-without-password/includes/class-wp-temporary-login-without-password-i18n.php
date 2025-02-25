@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_I18n' ) ) {
 /**
  * Localiztion
  *
@@ -24,4 +29,5 @@ class Wp_Temporary_Login_Without_Password_I18n {
 		);
 	}
 
+}
 }

@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+if ( ! class_exists( 'Wtlwp_Sytem_Info' ) ) {
 
 /**
  * Created by PhpStorm.
@@ -53,7 +58,7 @@ class Wtlwp_Sytem_Info {
 			'SSL SUPPORT'              => extension_loaded( 'openssl' ) ? 'SSL extension loaded' : 'SSL extension NOT loaded',
 			'MB String'                => extension_loaded( 'mbstring' ) ? 'MB String extensions loaded' : 'MB String extensions NOT loaded',
 			'--',
-			'ACTIVE PLUGINS'           => "<br />",
+			'ACTIVE PLUGINS'           => '<br />',
 			'INACTIVE PLUGINS'         => '<br />',
 			'--',
 			'CURRENT THEME'            => '',
@@ -83,9 +88,9 @@ class Wtlwp_Sytem_Info {
 		foreach ( $all_plugins as $plugin_path => $plugin ) {
 			// If the plugin isn't active, don't show it.
 			if ( ! in_array( $plugin_path, $active_plugins ) ) {
-				$plugins['INACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . "<br />" . str_repeat( ' ', 30 );
+				$plugins['INACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . '<br />' . str_repeat( ' ', 30 );
 			} else {
-				$plugins['ACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . "<br />" . str_repeat( ' ', 30 );
+				$plugins['ACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . '<br />' . str_repeat( ' ', 30 );
 			}
 		}
 
@@ -97,10 +102,10 @@ class Wtlwp_Sytem_Info {
 		$current_theme = '';
 		if ( function_exists( 'wp_get_theme' ) ) {
 			$theme_data    = wp_get_theme();
-			$current_theme = $theme_data->Name . ': ' . $theme_data->Version . "<br />" . str_repeat( ' ', 30 ) . $theme_data->get( 'Author' ) . ' (' . $theme_data->get( 'AuthorURI' ) . ')';
+			$current_theme = $theme_data->Name . ': ' . $theme_data->Version . '<br />' . str_repeat( ' ', 30 ) . $theme_data->get( 'Author' ) . ' (' . $theme_data->get( 'AuthorURI' ) . ')';
 		} else if ( function_exists( 'get_theme_data' ) ) {
 			$theme_data    = get_theme_data( get_stylesheet_directory() . '/style.css' );
-			$current_theme = $theme_data['Name'] . ': ' . $theme_data['Version'] . "<br />" . str_repeat( ' ', 30 ) . $theme_data['Author'] . ' (' . $theme_data['AuthorURI'] . ')';
+			$current_theme = $theme_data['Name'] . ': ' . $theme_data['Version'] . '<br />' . str_repeat( ' ', 30 ) . $theme_data['Author'] . ' (' . $theme_data['AuthorURI'] . ')';
 		}
 
 		return $current_theme;
@@ -115,12 +120,12 @@ class Wtlwp_Sytem_Info {
 
 		foreach ( $information as $name => $value ) {
 			if ( $value == '--' ) {
-				$output .= "<br />";
+				$output .= '<br />';
 				continue;
 			}
 
 			$length = $space - strlen( $name );
-			$output .= "<b>" . $name . "</b>: " . str_repeat( ' ', $length ) . $value . "<br />";
+			$output .= '<b>' . $name . '</b>: ' . str_repeat( ' ', $length ) . $value . '<br />';
 		}
 
 		$output .= "<br/>###<p class='font-semibold text-base'> End System Info</p> ###<br /></div>";
@@ -128,5 +133,5 @@ class Wtlwp_Sytem_Info {
 		return $output;
 	}
 
-
+}
 }

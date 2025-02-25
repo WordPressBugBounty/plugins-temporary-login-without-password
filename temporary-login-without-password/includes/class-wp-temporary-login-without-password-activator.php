@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Activator' ) ) {
 /**
  * Activator Class
  *
@@ -46,5 +51,5 @@ class Wp_Temporary_Login_Without_Password_Activator {
 		update_option( 'tlwp_plugin_version', WTLWP_PLUGIN_VERSION, $autoload );
 
 	}
-
+}
 }

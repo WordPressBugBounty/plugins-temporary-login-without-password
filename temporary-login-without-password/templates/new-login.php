@@ -58,16 +58,16 @@
 			</tr>
 		<?php } ?>
 
-        <tr class="form-field">
-            <th scope="row" class="wtlwp-form-row">
-                <label for="redirect-to"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Redirect After Login', 'temporary-login-without-password' ); ?></span></label>
-            </th>
-            <td>
-                <select name="wtlwp_data[redirect_to]" id="redirect-to" class="form-select font-normal text-gray-600 h-8 shadow-sm">
+		<tr class="form-field">
+			<th scope="row" class="wtlwp-form-row">
+				<label for="redirect-to"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Redirect After Login', 'temporary-login-without-password' ); ?></span></label>
+			</th>
+			<td>
+				<select name="wtlwp_data[redirect_to]" id="redirect-to" class="form-select font-normal text-gray-600 h-8 shadow-sm">
 					<?php Wp_Temporary_Login_Without_Password_Common::tlwp_dropdown_redirect_to( $default_redirect_to ); ?>
-                </select>
-            </td>
-        </tr>
+				</select>
+			</td>
+		</tr>
 
 		<tr class="form-field">
 			<th scope="row" class="wtlwp-form-row">
@@ -86,17 +86,29 @@
 
 			</td>
 		</tr>
-
-        <tr class="form-field">
-            <th scope="row" class="wtlwp-form-row">
-                <label for="language"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Language', 'temporary-login-without-password' ); ?></span></label>
-            </th>
-            <td scope="row" class="wtlwp-language-dropdown">
-                <?php
-                    wp_dropdown_languages(array('name' => 'wtlwp_data[locale]', 'selected' => get_locale()));
-                ?>
-            </td>
-        </tr>
+		<?php if ( Wp_Temporary_Login_Without_Password::is_pro() ) { ?>
+		<tr class="form-field">
+			<th scope="row" class="wtlwp-form-row">
+				<label for="max-login-limit"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Max Login Limit', 'temporary-login-without-password' ); ?></span></label>
+			</th>
+			<td>
+				<span id="max-login-limit">
+				 <input type="number" name="wtlwp_data[max_login_limit]" value="<?php echo esc_attr( Wp_Temporary_Login_Without_Password_Common::get_default_max_login_limit() ); ?>" class="wtlwp-form-input form-input text-center" min="0"/>
+					
+				</span>
+			</td>
+         </tr>
+        <?php } ?>
+		<tr class="form-field">
+			<th scope="row" class="wtlwp-form-row">
+				<label for="language"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Language', 'temporary-login-without-password' ); ?></span></label>
+			</th>
+			<td scope="row" class="wtlwp-language-dropdown">
+				<?php
+					wp_dropdown_languages(array('name' => 'wtlwp_data[locale]', 'selected' => get_locale()));
+				?>
+			</td>
+		</tr>
 
 
 		<tr class="form-field">

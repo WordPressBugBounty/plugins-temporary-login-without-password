@@ -3,6 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 
 /**
  * Main Temporary Login Without Password Admin Class
@@ -161,7 +162,7 @@ class Wp_Temporary_Login_Without_Password_Admin {
 		$_template_file      = WTLWP_PLUGIN_DIR . '/templates/admin-settings.php';
 		$wtlwp_generated_url = ! empty( $_REQUEST['wtlwp_generated_url'] ) ? urldecode( $_REQUEST['wtlwp_generated_url'] ) : '';
 		$user_email          = ! empty( $_REQUEST['user_email'] ) ? sanitize_email( $_REQUEST['user_email'] ) : '';
-		$tlwp_settings       = maybe_unserialize( get_option( 'tlwp_settings', array() ) );
+		$tlwp_settings       = maybe_unserialize( get_option( 'tlwp_settings', array() ) );		
 		$action              = ! empty( $_GET['action'] ) ? $_GET['action'] : '';
 		$user_id             = ! empty( $_GET['user_id'] ) ? $_GET['user_id'] : '';
 		$do_update           = ( 'update' === $action ) ? 1 : 0;
@@ -187,6 +188,7 @@ class Wp_Temporary_Login_Without_Password_Admin {
 			$visible_roles            = ( ! empty( $tlwp_settings ) && isset( $tlwp_settings['visible_roles'] ) ) ? $tlwp_settings['visible_roles'] : array();
 			$default_redirect_to      = ( ! empty( $tlwp_settings ) && isset( $tlwp_settings['default_redirect_to'] ) ) ? $tlwp_settings['default_redirect_to'] : '';
 			$delete_data_on_uninstall = ( ! empty( $tlwp_settings ) && isset( $tlwp_settings['delete_data_on_uninstall'] ) ) ? $tlwp_settings['delete_data_on_uninstall'] : 0;
+			$default_max_login_limit  = ( ! empty( $tlwp_settings ) && isset( $tlwp_settings['default_max_login_limit'] ) ) ? $tlwp_settings['default_max_login_limit'] : WTLWP_DEFAULT_MAX_LOGIN_LIMIT;
 
 			if ( ! empty( $wtlwp_generated_url ) ) {
 				$mailto_link = Wp_Temporary_Login_Without_Password_Common::generate_mailto_link( $user_email, $wtlwp_generated_url );
@@ -283,6 +285,7 @@ class Wp_Temporary_Login_Without_Password_Admin {
 		$visible_roles            = isset( $data['visible_roles'] ) ? $data['visible_roles'] : array();
 		$default_redirect_to      = isset( $data['default_redirect_to'] ) ? $data['default_redirect_to'] : '';
 		$delete_data_on_uninstall = isset( $data['delete_data_on_uninstall'] ) ? 1 : 0;
+		$default_max_login_limit = !empty( $data['default_max_login_limit'] ) ? $data['default_max_login_limit'] : WTLWP_DEFAULT_MAX_LOGIN_LIMIT;
 
 		if ( ! in_array( $default_role, $visible_roles ) ) {
 			$visible_roles[] = $default_role;
@@ -293,7 +296,8 @@ class Wp_Temporary_Login_Without_Password_Admin {
 			'default_expiry_time'      => $default_expiry_time,
 			'visible_roles'            => $visible_roles,
 			'default_redirect_to'      => $default_redirect_to,
-			'delete_data_on_uninstall' => $delete_data_on_uninstall
+			'delete_data_on_uninstall' => $delete_data_on_uninstall,
+			'default_max_login_limit'  => $default_max_login_limit
 		);
 
 		update_option( 'tlwp_settings', maybe_serialize( $tlwp_settings ), true );
@@ -529,6 +533,66 @@ class Wp_Temporary_Login_Without_Password_Admin {
 		return true;
 	}
 
+	public function tlwp_show_promotion_notice() {
+
+		if ( ! Wp_Temporary_Login_Without_Password_Common::is_tlwp_admin_page() ) {
+			return;
+		}
+
+		if ( Wp_Temporary_Login_Without_Password::is_pro() ) {
+			return;
+		}
+
+		if ( get_option( 'tlwp_close_promotion_notice' ) ) {
+			return;
+		}
+
+		/* translators: 1. Anchor start tag 2. Anchor close tag */
+		$promotion_optin_link = sprintf(__( ' %1$sGo Pro – More Power, Less Limits!%2$s', 'temporary-login-without-password' ), "<a class='wtlwp-promo-link text-indigo-600 font-bold' href='" . esc_url('https://www.icegram.com/temporary-login-without-password/?utm_source=in-app&utm_medium=admin-notice&utm_campaign=launch-promotion') . "' target='_blank'><b>", '</b></a>' );
+
+		$promotion_plugin_name = sprintf(__( ' %1$sTemporary Login Without Password%2$s', 'temporary-login-without-password' ), '<b>', '</b>' );
+
+		?>
+		<div class="notice notice-success is-dismissible" id="wtlwp-promotion-custom-notice">
+			<p>
+				<?php
+					echo sprintf( esc_html__( "Launch new %1\$s plugin's pro plan. %2\$s 🚀", 'temporary-login-without-password' ), wp_kses_post( $promotion_plugin_name ), wp_kses_post( $promotion_optin_link ) );
+				?>
+			</p>
+			
+		</div>
+		<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				$('#wtlwp-promotion-custom-notice').on('click', '.notice-dismiss, .wtlwp-promo-link', function() {
+					$.ajax({
+						method: 'POST',
+						url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
+						dataType: 'json',
+						data: {
+							action: 'tlwp_dismiss_promo_custom_notice',
+							security: '<?php echo esc_html( wp_create_nonce( 'tlwp-promo-dismiss-action' ) ); ?>'
+						}
+					}).done(function(response){
+						console.log( 'response: ', response );
+					});
+				});
+			});
+		</script>
+		<?php
+	}
+
+	public function tlwp_dismiss_promo_custom_notice() {
+		$response = array(
+			'status' => 'success',
+		);
+	
+		check_ajax_referer( 'tlwp-promo-dismiss-action', 'security' );
+	
+		update_option( 'tlwp_close_promotion_notice', 'yes', false );
+	
+		wp_send_json( $response );
+	}
+
 	/**
 	 *
 	 * Disable plugin deactivation link for the temporary user
@@ -636,6 +700,7 @@ class Wp_Temporary_Login_Without_Password_Admin {
 		}
 
 		$allow_display_notices = array(
+			'tlwp_show_promotion_notice',
 			'show_review_notice',
 			'tlwp_display_admin_notices',
 			'tlwp_show_feature_survey',
@@ -740,6 +805,6 @@ class Wp_Temporary_Login_Without_Password_Admin {
 
 		return $footer_text;
 	}
-
+}
 
 }

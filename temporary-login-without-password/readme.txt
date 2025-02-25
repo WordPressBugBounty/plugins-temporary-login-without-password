@@ -5,7 +5,7 @@ Tags: temporary access, developer access, passwordless login, magic pin, secure 
 Requires at least: 3.0.1
 Requires PHP: 5.3
 Tested up to: 6.7
-Stable tag: 1.8.5
+Stable tag: 1.9.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -45,6 +45,15 @@ If you need an admin access to your client's WordPress setup to resolve any issu
 >
 > **Note**:
 > Keep the expiry of a temporary login link for one month. Send the created login link as a reply to this email.
+
+### Temporary Login Without Password Pro Features
+➡️ Limit Link Usage: Set a maximum number of times a temporary login link can be used, ensuring controlled, secure access.
+
+➡️ Instant Admin Alerts: Receive notifications each time a temporary login is accessed, keeping you informed of all activity.
+
+Ready to take your security and convenience to the next level? 
+**[Upgrade to TLWP Pro](https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1)** today to unlock our advanced features. Experience the full power of secure, temporary, passwordless access for your WordPress / WooCommerce site.
+
 
 #### What users have to say about Temporary Login Without Password?
 
@@ -171,11 +180,15 @@ Yes. There is no limit to create temporary logins. You can create as many tempor
 
 == Upgrade Notice ==
 
-= 1.8.5 =
+= 1.9.0 =
 
-* Fix: PHP Notice: Function _load_textdomain_just_in_time was called incorrectly
+* New: Initial release of Temporary Login Without Password pro plugin
 
 == Changelog ==
+
+**1.9.0 [2025-02-25]**
+
+* New: Initial release of Temporary Login Without Password pro plugin
 
 **1.8.5 [2024-11-22]**
 
