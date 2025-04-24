@@ -15,19 +15,19 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_I18n' ) ) {
  *
  * Class Wp_Temporary_Login_Without_Password_I18n
  */
-class Wp_Temporary_Login_Without_Password_I18n {
+	class Wp_Temporary_Login_Without_Password_I18n {
 
-	/**
-	 * Load plugin text domain
-	 *
-	 * @since 1.0.0
-	 */
-	public function load_plugin_textdomain() {
+		/**
+		 * Load plugin text domain
+		 *
+		 * @since 1.0.0
+		 */
+		public function load_plugin_textdomain() {
 
-		load_plugin_textdomain(
+			load_plugin_textdomain(
 			'temporary-login-without-password', false, dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
-		);
-	}
+			);
+		}
 
-}
+	}
 }

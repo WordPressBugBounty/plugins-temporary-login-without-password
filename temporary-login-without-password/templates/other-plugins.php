@@ -137,7 +137,7 @@ $plugins = array(
 
 <div class="container flex flex-wrap w-full mt-4 mb-7">
 	<div class="block mt-1 text-center">
-		<h3 class="text-2xl font-bold leading-9 text-gray-700 sm:truncate mb-3 text-center"><?php echo sprintf( 'Other awesome plugins from same author (<a href="%s" target="_blank">StoreApps</a> & <a href="%s" target="_blank">Icegram</a>)', $storeapps_url, $ig_url ); ?></h3>
+		<h3 class="text-2xl font-bold leading-9 text-gray-700 sm:truncate mb-3 text-center"><?php printf(esc_html__( 'Other awesome plugins from same author (%1$sStoreApps%2$s & %3$sIcegram%2$s)', 'temporary-login-without-password' ),'<a href="' . esc_url( $storeapps_url ) . '" target="_blank">','</a>','<a href="' . esc_url( $ig_url ) . '" target="_blank">'); ?></h3>
 	</div>
 	<div class="grid w-full grid-cols-3 ">
 		<?php foreach ( $plugins as $ig_plugin ) { ?>
@@ -164,13 +164,13 @@ $plugins = array(
 					</div>
 				</div>
 				<div class="flex flex-row mb-0 border-t">
-					<div class="flex w-2/3 px-3 py-5 text-sm"><?php echo esc_html__( 'Status', 'email-subscribers' ); ?>:
+					<div class="flex w-2/3 px-3 py-5 text-sm"><?php echo esc_html__( 'Status', 'temporary-login-without-password' ); ?>:
 						<?php if ( in_array( $ig_plugin['name'], $active_plugins ) ) { ?>
-							<span class="font-bold text-green-600">&nbsp;<?php echo esc_html__( 'Active', 'email-subscribers' ); ?></span>
+							<span class="font-bold text-green-600">&nbsp;<?php echo esc_html__( 'Active', 'temporary-login-without-password' ); ?></span>
 						<?php } elseif ( in_array( $ig_plugin['name'], $inactive_plugins ) ) { ?>
-							<span class="font-bold text-red-600">&nbsp;<?php echo esc_html__( 'Inactive', 'email-subscribers' ); ?></span>
+							<span class="font-bold text-red-600">&nbsp;<?php echo esc_html__( 'Inactive', 'temporary-login-without-password' ); ?></span>
 						<?php } else { ?>
-							<span class="font-bold text-orange-500">&nbsp;<?php echo esc_html__( 'Not Installed', 'email-subscribers' ); ?></span>
+							<span class="font-bold text-orange-500">&nbsp;<?php echo esc_html__( 'Not Installed', 'temporary-login-without-password' ); ?></span>
 						<?php } ?>
 					</div>
 					<div class="flex justify-center w-1/3 py-3 md:pr-4">
@@ -185,15 +185,15 @@ $plugins = array(
 						<button type="button" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium leading-5 text-white transition duration-150 ease-in-out bg-white bg-green-600 border border-transparent rounded-md hover:bg-green-500 focus:outline-none focus:shadow-outline-blue">
 					<?php 
 					if ( isset( $ig_plugin['is_premium'] ) && true === $ig_plugin['is_premium'] ) {
-						echo esc_html__( 'Buy Now', 'email-subscribers' );
+						echo esc_html__( 'Buy Now', 'temporary-login-without-password' );
 					} else {
-						echo esc_html__( 'Install', 'email-subscribers' );
+						echo esc_html__( 'Install', 'temporary-login-without-password' );
 					} 
 					?>
 						 </button>
 					<?php } elseif ( in_array( $ig_plugin['name'], $inactive_plugins ) ) { ?>
 						<button type="button" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium leading-5 text-white transition duration-150 ease-in-out bg-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-500 focus:outline-none focus:shadow-outline-blue">
-					<?php echo esc_html__( 'Activate', 'email-subscribers' ); ?> </button>
+					<?php echo esc_html__( 'Activate', 'temporary-login-without-password' ); ?> </button>
 					<?php } ?>
 			  </a>
 			</span>

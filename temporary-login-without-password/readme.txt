@@ -4,8 +4,8 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: temporary access, developer access, passwordless login, magic pin, secure login
 Requires at least: 3.0.1
 Requires PHP: 5.3
-Tested up to: 6.7
-Stable tag: 1.9.0
+Tested up to: 6.8
+Stable tag: 1.9.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -180,11 +180,17 @@ Yes. There is no limit to create temporary logins. You can create as many tempor
 
 == Upgrade Notice ==
 
-= 1.9.0 =
+= 1.9.1 =
 
-* New: Initial release of Temporary Login Without Password pro plugin
+* New: Create a temporary default user on first time activation
+* Update: Tested up to WordPress 6.8
 
 == Changelog ==
+
+**1.9.1 [2025-04-24]**
+
+* New: Create a temporary default user on first time activation
+* Update: Tested up to WordPress 6.8
 
 **1.9.0 [2025-02-25]**
 

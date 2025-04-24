@@ -11,16 +11,16 @@ if ( ! class_exists( 'Wtlwp_Sytem_Info' ) ) {
  * Date: 2019-01-11
  * Time: 14:59
  */
-class Wtlwp_Sytem_Info {
+	class Wtlwp_Sytem_Info {
 
-	/**
-	 *
-	 */
-	public function get_info( $space ) {
+		/**
+		 *
+		 */
+		public function get_info( $space ) {
 
-		global $wpdb;
+			global $wpdb;
 
-		$settings = array(
+			$settings = array(
 			'SITE_URL'                 => site_url(),
 			'HOME_URL'                 => home_url(),
 			'--',
@@ -62,76 +62,76 @@ class Wtlwp_Sytem_Info {
 			'INACTIVE PLUGINS'         => '<br />',
 			'--',
 			'CURRENT THEME'            => '',
-		);
+			);
 
-		$plugins = $this->get_plugins();
+			$plugins = $this->get_plugins();
 
-		$settings['ACTIVE PLUGINS']   .= $plugins['ACTIVE PLUGINS'];
-		$settings['INACTIVE PLUGINS'] .= $plugins['INACTIVE PLUGINS'];
-		$settings['CURRENT THEME']    .= $this->get_current_theme();
+			$settings['ACTIVE PLUGINS']   .= $plugins['ACTIVE PLUGINS'];
+			$settings['INACTIVE PLUGINS'] .= $plugins['INACTIVE PLUGINS'];
+			$settings['CURRENT THEME']    .= $this->get_current_theme();
 
 
-		return apply_filters( 'wtlwp_system_info', $settings );
+			return apply_filters( 'wtlwp_system_info', $settings );
 
-	}
+		}
 
-	function get_plugins() {
+		function get_plugins() {
 
-		$plugins = array(
+			$plugins = array(
 			'INACTIVE PLUGINS' => '',
 			'ACTIVE PLUGINS'   => ''
-		);
+			);
 
-		$all_plugins    = get_plugins();
-		$active_plugins = get_option( 'active_plugins', array() );
+			$all_plugins    = get_plugins();
+			$active_plugins = get_option( 'active_plugins', array() );
 
-		foreach ( $all_plugins as $plugin_path => $plugin ) {
-			// If the plugin isn't active, don't show it.
-			if ( ! in_array( $plugin_path, $active_plugins ) ) {
-				$plugins['INACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . '<br />' . str_repeat( ' ', 30 );
-			} else {
-				$plugins['ACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . '<br />' . str_repeat( ' ', 30 );
-			}
-		}
-
-		return $plugins;
-	}
-
-	function get_current_theme() {
-
-		$current_theme = '';
-		if ( function_exists( 'wp_get_theme' ) ) {
-			$theme_data    = wp_get_theme();
-			$current_theme = $theme_data->Name . ': ' . $theme_data->Version . '<br />' . str_repeat( ' ', 30 ) . $theme_data->get( 'Author' ) . ' (' . $theme_data->get( 'AuthorURI' ) . ')';
-		} else if ( function_exists( 'get_theme_data' ) ) {
-			$theme_data    = get_theme_data( get_stylesheet_directory() . '/style.css' );
-			$current_theme = $theme_data['Name'] . ': ' . $theme_data['Version'] . '<br />' . str_repeat( ' ', 30 ) . $theme_data['Author'] . ' (' . $theme_data['AuthorURI'] . ')';
-		}
-
-		return $current_theme;
-
-	}
-
-	function render_system_info_page() {
-
-		$space       = 30;
-		$information = $this->get_info( $space );
-		$output      = "<div class='p-4'>### <p class='font-semibold text-base'>System Info </p>###<br /><br />";
-
-		foreach ( $information as $name => $value ) {
-			if ( $value == '--' ) {
-				$output .= '<br />';
-				continue;
+			foreach ( $all_plugins as $plugin_path => $plugin ) {
+				// If the plugin isn't active, don't show it.
+				if ( ! in_array( $plugin_path, $active_plugins ) ) {
+					$plugins['INACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . '<br />' . str_repeat( ' ', 30 );
+				} else {
+					$plugins['ACTIVE PLUGINS'] .= $plugin['Name'] . ': ' . $plugin['Version'] . '<br />' . str_repeat( ' ', 30 );
+				}
 			}
 
-			$length = $space - strlen( $name );
-			$output .= '<b>' . $name . '</b>: ' . str_repeat( ' ', $length ) . $value . '<br />';
+			return $plugins;
 		}
 
-		$output .= "<br/>###<p class='font-semibold text-base'> End System Info</p> ###<br /></div>";
+		function get_current_theme() {
 
-		return $output;
+			$current_theme = '';
+			if ( function_exists( 'wp_get_theme' ) ) {
+				$theme_data    = wp_get_theme();
+				$current_theme = $theme_data->Name . ': ' . $theme_data->Version . '<br />' . str_repeat( ' ', 30 ) . $theme_data->get( 'Author' ) . ' (' . $theme_data->get( 'AuthorURI' ) . ')';
+			} else if ( function_exists( 'get_theme_data' ) ) {
+				$theme_data    = get_theme_data( get_stylesheet_directory() . '/style.css' );
+				$current_theme = $theme_data['Name'] . ': ' . $theme_data['Version'] . '<br />' . str_repeat( ' ', 30 ) . $theme_data['Author'] . ' (' . $theme_data['AuthorURI'] . ')';
+			}
+
+			return $current_theme;
+
+		}
+
+		function render_system_info_page() {
+
+			$space       = 30;
+			$information = $this->get_info( $space );
+			$output      = "<div class='p-4'>### <p class='font-semibold text-base'>System Info </p>###<br /><br />";
+
+			foreach ( $information as $name => $value ) {
+				if ( $value == '--' ) {
+					$output .= '<br />';
+					continue;
+				}
+
+				$length = $space - strlen( $name );
+				$output .= '<b>' . $name . '</b>: ' . str_repeat( ' ', $length ) . $value . '<br />';
+			}
+
+			$output .= "<br/>###<p class='font-semibold text-base'> End System Info</p> ###<br /></div>";
+
+			return $output;
+		}
+
 	}
-
-}
 }

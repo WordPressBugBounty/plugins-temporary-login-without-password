@@ -90,7 +90,7 @@
 
 			</td>
 		</tr>
-        <?php if ( Wp_Temporary_Login_Without_Password::is_pro() ) { ?>
+		<?php if ( Wp_Temporary_Login_Without_Password::is_pro() ) { ?>
 		<tr class="form-field">
 			<th scope="row" class="wtlwp-form-row">
 				<label for="max-login-limit"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Max Login Limit', 'temporary-login-without-password' ); ?></span></label>
@@ -100,8 +100,8 @@
 				 <input type="number" name="wtlwp_data[max_login_limit]" value="<?php echo esc_attr($temporary_user_data['max_login_limit'] ); ?>" class="wtlwp-form-input form-input text-center" min="0"/>					
 				</span>
 			</td>
-         </tr>
-        <?php } ?>
+		 </tr>
+		<?php } ?>
 		<tr class="form-field">
 			<th scope="row" class="wtlwp-form-row">
 				<label for="language"><?php echo esc_html__( 'Language', 'temporary-login-without-password' ); ?></label>

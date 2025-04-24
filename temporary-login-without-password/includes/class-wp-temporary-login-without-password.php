@@ -16,7 +16,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
  *
  * @package Temporary Login Without Password
  */
-class Wp_Temporary_Login_Without_Password {
+	class Wp_Temporary_Login_Without_Password {
 
 		/**
 		 * Loader.
@@ -123,6 +123,7 @@ class Wp_Temporary_Login_Without_Password {
 			$this->loader->add_action( 'admin_menu', $plugin_admin, 'admin_menu' );
 			$this->loader->add_action( 'network_admin_menu', $plugin_admin, 'admin_menu' );
 			$this->loader->add_action( 'admin_init', $plugin_admin, 'create_user' );
+			$this->loader->add_action( 'admin_init', $plugin_admin, 'maybe_create_one_click_user' );
 			$this->loader->add_action( 'admin_init', $plugin_admin, 'update_tlwp_settings' );
 			$this->loader->add_action( 'admin_init', $plugin_admin, 'manage_temporary_login' );
 			$this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_display_admin_notices' );

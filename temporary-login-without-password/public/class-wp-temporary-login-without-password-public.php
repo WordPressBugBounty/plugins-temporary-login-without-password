@@ -170,7 +170,7 @@ class Wp_Temporary_Login_Without_Password_Public {
 
 			// Is temporary user? Disable Login by throwing error.
 			if ( $is_valid_temporary_login ) {
-				$user = new WP_Error( 'denied', __( "ERROR: User can't find." ) );
+				$user = new WP_Error( 'denied', __( "ERROR: User can't find.", 'temporary-login-without-password' ) );
 			}
 		}
 

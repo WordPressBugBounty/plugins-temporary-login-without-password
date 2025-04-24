@@ -112,3 +112,32 @@
 	);
 
 })(jQuery);
+
+jQuery(function ($) {
+$('#wtlwp-enable-one-click-login').on('click', function (e) {
+	e.preventDefault();
+	$.ajax({
+		url: data.admin_ajax_url,
+		type: 'POST',
+		data: {
+			action: 'wtlwp_enable_one_click_login',
+			nonce: data.nonce,
+			user_id: $(this).data('user-id'),
+			enable: 'enable'
+		},
+		success: function (response) {
+			if (response.success) {
+				$('#wtlwp-enable-one-click-login').hide();
+				$('.wtlwp-copy-to-clipboard').removeClass('hidden');
+				$('.wtlwp-copy-to-clipboard-text').removeClass('hidden');
+			} else {
+				console.log('Failed:', response.data.message);
+			}
+		},
+		error: function (err) {
+			console.log('AJAX error:', err);
+		}
+	});
+});
+
+});

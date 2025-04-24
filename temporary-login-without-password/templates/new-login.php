@@ -97,8 +97,8 @@
 					
 				</span>
 			</td>
-         </tr>
-        <?php } ?>
+		 </tr>
+		<?php } ?>
 		<tr class="form-field">
 			<th scope="row" class="wtlwp-form-row">
 				<label for="language"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Language', 'temporary-login-without-password' ); ?></span></label>

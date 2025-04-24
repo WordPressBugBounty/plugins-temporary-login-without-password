@@ -37,33 +37,53 @@
 			<?php } ?>
 
 			<?php 
-			$wtlwp_generated_url = esc_url( $wtlwp_generated_url );
+            $wtlwp_generated_url = esc_url( $wtlwp_generated_url );
 			if ( ! empty( $wtlwp_generated_url ) ) { 
+				$is_one_click_user_active = get_transient( 'wtlwp_one_click_user_active' );
+				$user_id   = get_transient( 'wtlwp_one_click_user_id' );
+				$enable_login_url = Wp_Temporary_Login_Without_Password_Common::get_manage_login_url( $user_id, 'enable' );
 				?>
 
-				<div class="wrap rounded-md bg-white shadow-md my-4 py-4 pl-4 pr-3 border-indigo-600 border-2" id="generated-wtlwp-login-link">
-					<p class="py-1.5 text-gray-500 font-medium tracking-wide text-sm">
+	<div class="wrap rounded-md bg-white shadow-md my-4 py-4 pl-4 pr-3 border-indigo-600 border-2" id="generated-wtlwp-login-link">
+		<p class="py-1.5 text-gray-500 font-medium tracking-wide text-sm">
 						<?php esc_attr_e( "Here's a temporary login link", 'temporary-login-without-password' ); ?>
-					</p>
-					<input id="wtlwp-click-to-copy-btn" type="text" class="wtlwp-wide-input form-input text-sm" value="<?php echo esc_url( $wtlwp_generated_url ); ?>">
-					<button class="wtlwp-copy-to-clipboard p-2 border-transparent text-indigo-600 rounded-full hover:text-gray-600 focus:outline-none focus:text-gray-600 focus:bg-gray-100 transition duration-150 ease-in-out ml-1 hover:rounded-full hover:bg-gray-100" data-clipboard-action="copy" data-clipboard-target="#wtlwp-click-to-copy-btn">
-						<svg data-clipboard-action="copy" data-clipboard-target="#wtlwp-click-to-copy-btn" class="w-6 h-6 inline-block -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title><?php echo esc_html__( 'Copy', 'temporary-login-without-password' ); ?></title><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-					</button>
-					
-					
-					<span id="copied-text-message-wtlwp-click-to-copy-btn"></span>
-					<p class="py-1.5 tracking-wide text-gray-600">
-						<?php
-						esc_attr_e( 'User can directly login to WordPress admin panel without username and password by opening this link.', 'temporary-login-without-password' );
-						if ( ! empty( $user_email ) ) {
-							/* translators: %s: mailto link */
-							echo ' ' . sprintf( __( '<a href="%s">Email</a> temporary login link to user', 'temporary-login-without-password' ), $mailto_link ); //phpcs:ignore
-						}
-						?>
-					</p>
+		</p>
 
-				</div>
+		<input id="wtlwp-click-to-copy-btn" type="text" class="wtlwp-wide-input form-input text-sm" value="<?php echo esc_url( $wtlwp_generated_url ); ?>">
+
+		<?php if ( 'yes' === $is_one_click_user_active ) : ?>
+			<!-- Show Enable Button -->
+			<button id="wtlwp-enable-one-click-login" 
+				data-user-id="<?php echo esc_attr( $user_id ); ?>" 
+				title="<?php esc_attr_e( 'Enable One Click Login', 'temporary-login-without-password' ); ?>"
+				class="p-2 border-transparent text-indigo-600 rounded-full hover:text-gray-600 focus:outline-none focus:text-gray-600 focus:bg-gray-100 transition duration-150 ease-in-out ml-1 hover:rounded-full hover:bg-gray-100 inline-flex items-center">
+				<svg class="w-6 h-6 inline-block -mt-1" fill="currentColor" viewBox="0 0 24 24">
+					<title><?php esc_html_e( 'Enable', 'temporary-login-without-password' ); ?></title>
+					<path d="M17 8h-1V6a4 4 0 00-8 0v2H7a1 1 0 00-1 1v11a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1zm-6 8a1 1 0 112 0 1 1 0 01-2 0zm-2-8V6a2 2 0 014 0v2H9z"/>
+				</svg>
+			</button>
+		<?php endif; ?>
+
+		<!-- Copy Button & Info Text for all users -->
+		<button class="wtlwp-copy-to-clipboard p-2 border-transparent text-indigo-600 rounded-full hover:text-gray-600 focus:outline-none focus:text-gray-600 focus:bg-gray-100 transition duration-150 ease-in-out ml-1 hover:rounded-full hover:bg-gray-100 <?php echo ( 'yes' === $is_one_click_user_active ) ? 'hidden' : ''; ?>" data-clipboard-action="copy" data-clipboard-target="#wtlwp-click-to-copy-btn">
+			<svg class="w-6 h-6 inline-block -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<title><?php echo esc_html__( 'Copy', 'temporary-login-without-password' ); ?></title>
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+			</svg>
+		</button>
+
+		<span id="copied-text-message-wtlwp-click-to-copy-btn"></span>
+		<p class="py-1.5 tracking-wide text-gray-600 wtlwp-copy-to-clipboard-text <?php echo ( 'yes' === $is_one_click_user_active ) ? 'hidden' : ''; ?>">
+			<?php esc_attr_e( 'User can directly login to WordPress admin panel without username and password by opening this link.', 'temporary-login-without-password' ); ?>
+			<?php if ( ! empty( $user_email ) ) : ?>
+				<?php 
+				    // translators: %s: mailto link.
+					echo ' ' . sprintf( __( '<a href="%s">Email</a> temporary login link to user', 'temporary-login-without-password' ), esc_url( $mailto_link ) ); ?>
+			<?php endif; ?>
+		</p>
+	</div>
 			<?php } ?>
+
 			<!-- Add New Form End -->
 
 			<!-- List All Generated Logins Start -->
