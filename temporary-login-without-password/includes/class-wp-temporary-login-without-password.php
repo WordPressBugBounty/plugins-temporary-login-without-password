@@ -48,6 +48,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 			$this->plugin_name = 'temporary-login-without-password';
 			$this->version     = WTLWP_PLUGIN_VERSION;
 
+			$this->define_constants();
 			$this->load_dependencies();
 			$this->set_locale();
 			$this->define_admin_hooks();
@@ -59,6 +60,23 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 				$tlwp_feedback     = new $ig_feedback_class( 'Temporary Login Without Password', 'temporary-login-without-password', 'tlwp', 'tlwp.', false );
 				$tlwp_feedback->render_deactivate_feedback();
 			}
+		}
+
+		/**
+		 * Define Contstants
+		 *
+		 * @since 4.0.0
+		 */
+		public function define_constants() {
+
+			global $wpdb;
+
+			$upload_dir = wp_upload_dir( null, false );
+
+			if ( ! defined( 'TLWP_LOG_DIR' ) ) {
+				define( 'TLWP_LOG_DIR', $upload_dir['basedir'] . '/tlwp-logs/' );
+			}
+
 		}
 
 		/**
@@ -78,6 +96,15 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 
 			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wtlwp-system-info.php';
 
+			// Core Functions
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-tlwp-common.php';
+
+			// Core Functions
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/tlwp-core-functions.php';
+
+			// Install/ Update
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/upgrade/tlwp-update-functions.php';
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-tlwp-install.php';
 
 			// Feedback
 			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/feedback/class-ig-tracker.php';
@@ -199,13 +226,13 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 			return $this->version;
 		}
 
-			/**
-			 * Is TLWP PRO?
-			 *
-			 * @return bool
-			 *
-			 * @since 1.8.6
-			 */
+		/**
+		 * Is TLWP PRO?
+		 *
+		 * @return bool
+		 *
+		 * @since 1.8.6
+		 */
 		public static function is_pro() {
 			return file_exists( WTLWP_PLUGIN_DIR . '/pro/admin/pro-class-wp-temporary-login-without-password.php' );
 		}

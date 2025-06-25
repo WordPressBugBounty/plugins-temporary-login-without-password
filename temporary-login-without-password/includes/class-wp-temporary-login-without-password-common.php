@@ -19,7 +19,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 		public static function create_username( $data ) {
 
 			// For one-click users, generate tlwp-user-<hash>
-			if ( isset( $data['is_one_click'] ) && true === $data['is_one_click'] ) {
+			if ( isset( $data['source_of_creation'] ) && ( 'one-click' === $data['source_of_creation'] || 'tlwp-integration' === $data['source_of_creation'] ) ) {
 					$hash     = strtolower( wp_generate_password( 15, false, false ) );
 					$username = 'tlwp-user-' . $hash;
 				return sanitize_user( $username, true );
@@ -43,7 +43,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			if ( username_exists( $name ) ) {
 				$name = $name . substr( uniqid( '', true ), - 6 );
 			}
-
+ 
 			$username = sanitize_user( $name, true );
 
 			/**
@@ -70,7 +70,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 		 * @return array|int|WP_Error
 		 */
 		public static function create_new_user( $data ) {
-
+ 
 			if ( false === self::can_manage_wtlwp() ) {
 				return 0;
 			}
@@ -78,7 +78,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			$result = array(
 			'error' => true
 			);
-			$is_one_click  = ! empty( $data['is_one_click'] );
+			$source_of_creation  = ! empty( $data['source_of_creation'] );
 			$expiry_option = ! empty( $data['expiry'] ) ? $data['expiry'] : 'day';
 			$max_login_limit =  self::get_max_login_limit($data);
 			$date          = ! empty( $data['custom_date'] ) ? $data['custom_date'] : '';
@@ -98,9 +98,9 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			'role'       => $role,
 			);
 
-			if ( ! $is_one_click && ! empty( $email ) ) {
+			if (  empty( $source_of_creation ) && ! empty( $email ) ) {
 			$user_args['user_email'] = $email;
-			}
+			} 
 
 			$user_id = wp_insert_user( $user_args );
 
@@ -143,9 +143,9 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 				$locale = ! empty( $data['locale'] ) ? $data['locale'] : 'en_US';
 				update_user_meta( $user_id, 'locale', $locale );
 
-				if ( $is_one_click ) {
-				update_user_meta( $user_id, '_wtlwp_is_one_click', true );
-				}
+				// if ( $is_one_click ) {
+				// update_user_meta( $user_id, '_wtlwp_is_one_click', true );
+				// }
 
 				$result['error']   = false;
 				$result['user_id'] = $user_id;
@@ -1328,6 +1328,27 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 	
 			return $max_login_limit; 
 		}
+
+		/**
+		 * 
+		 * Check user is tlwp user 
+		 * 
+		 * @param int $user_id
+		 * 
+		 * @return boolean
+		 * 
+		 */
+		public static function check_user_wtlwp_user($user_id)
+        {
+
+            if (! $user_id) {
+                return false;
+            }
+
+            $is_tlwp_user = get_user_meta($user_id, '_wtlwp_user', true);
+
+            return ($is_tlwp_user) ? true : false;
+        }
 	
 	}
 }

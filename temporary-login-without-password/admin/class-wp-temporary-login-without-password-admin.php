@@ -46,6 +46,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			$this->version     = $version;
 
 			add_action( 'wp_ajax_wtlwp_enable_one_click_login', array( $this, 'handle_enable_one_click_login' ));
+			//add_action( 'init', array( $this, 'generate_tlwp_temporary_login_link' ) ); //testing only
 		}
 
 		/**
@@ -275,6 +276,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			}
 
 			$data  = self::sanitize_data( $_POST['wtlwp_data'] );
+
 			$email  = $data['user_email'];
 			$error  = true;
 			$result = array(
@@ -298,6 +300,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 
 			if ( ! $error ) {
 				$user = Wp_Temporary_Login_Without_Password_Common::create_new_user( $data );
+				
 				if ( isset( $user['error'] ) && true === $user['error'] ) {
 					$result = array(
 					'status'  => 'error',
@@ -332,6 +335,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 		public static function create_one_click_user() {
    
 			$data         = self::get_user_creation_data();
+			$data['source_of_creation'] = 'one-click';
 			$result       = array( 'status' => 'error' );
 			$redirect_link = '';
 			$user_id      = 0;
@@ -387,12 +391,46 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 				'user_last_name'   => 'User',
 				'role'             => $default_role,
 				'redirect_to'      => $default_redirect_to,
-				'is_one_click'     => true,
 				'expiry'           => $default_expiry_time,
 				);
 			
 		}
+	
+		/**
+		 * Generate a temporary login link using the TLWP plugin.
+		 *
+		 * @return array Result containing status, login URL, user ID, and message.
+		 */
+		public static function generate_tlwp_temporary_login_link() {
+			error_log( __FILE__ . " " . __LINE__ . ' var:' . print_r( "var", true ) );
+			$data                = self::get_user_creation_data();
+			$data['source_of_creation'] = 'tlwp-integration';
+			$result              = array( 'status' => 'error' );
+			$generated_login_url = '';
 
+			if ( ! empty( $data ) && class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
+				$user    = Wp_Temporary_Login_Without_Password_Common::create_new_user( $data );
+				$user_id = isset( $user['user_id'] ) ? (int) $user['user_id'] : 0;
+
+				if ( $user_id ) {
+					$login_url = Wp_Temporary_Login_Without_Password_Common::get_login_url( $user_id );
+
+					if ( $login_url ) {
+						$generated_login_url = urlencode( $login_url );
+
+						$result = array(
+							'status'    => 'success',
+							'login_url' => $generated_login_url,
+							'user_id'   => $user_id,
+							'message'   => 'user_created',
+						);
+					}
+				} else {
+					$result['message'] = 'user_creation_failed';
+				}
+			}
+			return $result;
+		}
 
 		/**
 		 * Manage settings

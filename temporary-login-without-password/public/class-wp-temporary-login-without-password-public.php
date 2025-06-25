@@ -74,8 +74,9 @@ class Wp_Temporary_Login_Without_Password_Public {
 		if ( ! empty( $_GET['wtlwp_token'] ) ) {
 
 			$wtlwp_token = sanitize_key( $_GET['wtlwp_token'] );  // Input var okay.
+			
 			$users       = Wp_Temporary_Login_Without_Password_Common::get_valid_user_based_on_wtlwp_token( $wtlwp_token );
-
+			
 			$temporary_user = '';
 			if ( ! empty( $users ) ) {
 				$temporary_user = $users[0];

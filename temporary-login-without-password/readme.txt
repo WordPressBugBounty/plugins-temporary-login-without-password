@@ -5,7 +5,7 @@ Tags: temporary access, developer access, passwordless login, magic pin, secure 
 Requires at least: 3.0.1
 Requires PHP: 5.3
 Tested up to: 6.8
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -34,6 +34,7 @@ Read [this article](https://www.storeapps.org/create-secure-login-without-passwo
 > ➡️  Set a language for a temporary user
 > ➡️  See the last logged in time of a temporary user
 > ➡️  Also see, how many times a temporary user accessed your setup
+> ➡️  Track user activity with detailed logs to know what each temporary user did
 
 #### **For Developers**
 
@@ -50,6 +51,8 @@ If you need an admin access to your client's WordPress setup to resolve any issu
 ➡️ Limit Link Usage: Set a maximum number of times a temporary login link can be used, ensuring controlled, secure access.
 
 ➡️ Instant Admin Alerts: Receive notifications each time a temporary login is accessed, keeping you informed of all activity.
+
+➡️ Activity Log: View detailed activity of each temporary user to monitor what actions they performed while logged in.
 
 Ready to take your security and convenience to the next level? 
 **[Upgrade to TLWP Pro](https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1)** today to unlock our advanced features. Experience the full power of secure, temporary, passwordless access for your WordPress / WooCommerce site.
@@ -89,15 +92,23 @@ If you like Temporary Login Without Password, please leave a [five stars ⭐⭐�
 
 If you like this plugin then consider checking out our other solutions:
 
+[Icegram Express](https://wordpress.org/plugins/email-subscribers/) - A complete newsletter plugin which lets you collect leads, send automated new blog post notification emails, create & send broadcasts, and also manage them all in one single place.
+
+[Icegram Mailer](https://wordpress.org/plugins/icegram-mailer/) - Reliable built‑in email delivery for WordPress & WooCommerce with real‑time logs, analytics, and a free 200‑email plan.
+
+[Icegram Engage](https://wordpress.org/plugins/icegram/) - Popups, Welcome Bar, Opt-ins & Lead Generation plugin
+
+[Icegram Collect](https://wordpress.org/plugins/icegram-rainmaker/) - Best form plugin on WordPress
+
 [Smart Manager](https://wordpress.org/plugins/smart-manager-for-wp-e-commerce/) - Manage & Bulk edit Products, Orders & more..
 
 [Offermative](https://wordpress.org/plugins/offermative-discount-pricing-related-products-upsell-funnels-for-woocommerce/) - Dynamic discount pricing, related product recommendations, upsells and funnels for WooCommerce.
 
-[Icegram](https://wordpress.org/plugins/icegram/) - Popups, Welcome Bar, Opt-ins & Lead Generation plugin
+[Post / Page Duplicate](https://wordpress.org/plugins/duplicate-post-page-copy-clone-wp/) – Ultimate one‑click content duplicator for WordPress, letting you clone posts, pages & custom post types effortlessly
 
-[Email Subscribers & Newsletters](https://wordpress.org/plugins/email-subscribers/) - A complete newsletter plugin which lets you collect leads, send automated new blog post notification emails, create & send broadcasts, and also manage them all in one single place.
+[Icegram Cookie Manager](https://wordpress.org/plugins/icegram-cookie-manager/) – Customizable cookie consent banner with privacy policy links and styling options for WordPress
 
-[Rainmaker](https://wordpress.org/plugins/icegram-rainmaker/) - Best form plugin on WordPress
+[Switch User Login](https://wordpress.org/plugins/switch-user-login-by-icegram/) – Instantly switch between WordPress user accounts from the admin bar for seamless testing, debugging, and multisite/WooCommerce management
 
 Also, check our other [Premium WooCommerce plugins.](https://www.storeapps.org/shop/?utm_source=wprepo&utm_medium=tlwp&utm_campaign=sa_products_upsell&utm_content=readme)
 
@@ -180,12 +191,15 @@ Yes. There is no limit to create temporary logins. You can create as many tempor
 
 == Upgrade Notice ==
 
-= 1.9.1 =
+= 1.9.2 =
 
-* New: Create a temporary default user on first time activation
-* Update: Tested up to WordPress 6.8
+* New: Added activity logs feature - Track actions performed by temporary users
 
 == Changelog ==
+
+**1.9.2 [2025-06-25]**
+
+* New: Added activity logs feature - Track actions performed by temporary users
 
 **1.9.1 [2025-04-24]**
 

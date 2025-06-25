@@ -4,18 +4,57 @@
  *
  * @package Temporary Login Without Password
  */
+ 
+/**
+ * Filter to render custom tab 
+ */
+$base_url = admin_url( 'users.php?page=wp-temporary-login-without-password&tab=' );
+$tabs = array(
+	'home' => array(
+		'url'  => $base_url . 'home',
+		'name' => __( 'Temporary Logins', 'temporary-login-without-password' ),
+		'visible' => ! $is_temporary_login, 
+	),
+	'settings' => array(
+		'url'  => $base_url . 'settings',
+		'name' => __( 'Settings', 'temporary-login-without-password' ),
+		'visible' => ! $is_temporary_login, 
+	),
+	'system-info' => array(
+		'url'  => $base_url . 'system-info',
+		'name' => __( 'System Info', 'temporary-login-without-password' ),
+		'visible' => true, 
+	),
+	'other-plugins' => array(
+		'url'  => $base_url . 'other-plugins',
+		'name' => __( 'Other Awesome Plugins', 'temporary-login-without-password' ),
+		'visible' => true, 
+	), 
+); 
 
+$filtered_tabs =  apply_filters( 'tlwp_custom_extra_tab', $tabs, $active_tab ); 
 ?>
 <h2 class="nav-tab-wrapper">
-	<?php if (! $is_temporary_login) { ?>
-		<a href="<?php echo esc_url( admin_url( 'users.php?page=wp-temporary-login-without-password&tab=home' ) ); ?>" class="nav-tab <?php echo 'home' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Temporary Logins', 'temporary-login-without-password' ); ?></a>
-		<a href="<?php echo esc_url( admin_url( 'users.php?page=wp-temporary-login-without-password&tab=settings' ) ); ?>" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Settings', 'temporary-login-without-password' ); ?></a>
+	<?php
+	foreach ( $filtered_tabs as $slug => $tab ) { 
+
+		if ( empty( $tab['visible'] ) ) {
+			continue;
+		}
+
+		$active = ( $slug === $active_tab ) ? 'nav-tab-active' : ''; ?>
+		<a href="<?php echo esc_url( $tab['url'] ); ?>" class="nav-tab <?php echo esc_attr( $active ); ?>">
+		 	<?php echo esc_html( $tab['name'] ); ?>
+		</a> 
 	<?php } ?>
-	<a href="<?php echo esc_url( admin_url( 'users.php?page=wp-temporary-login-without-password&tab=system-info' ) ); ?>" class="nav-tab <?php echo 'system-info' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'System Info', 'temporary-login-without-password' ); ?></a>
-	<a href="<?php echo esc_url( admin_url( 'users.php?page=wp-temporary-login-without-password&tab=other-plugins' ) ); ?>" class="nav-tab <?php echo 'other-plugins' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Other Awesome Plugins', 'temporary-login-without-password' ); ?></a>
+	<?php if (! Wp_Temporary_Login_Without_Password::is_pro() ) { ?>
+		<a href="<?php echo esc_url( admin_url( 'users.php?page=wp-temporary-login-without-password&tab=tlwp-pricing' ) ); ?>" class="nav-tab <?php echo 'tlwp-pricing' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Go Pro 🔥', 'temporary-login-without-password' ); ?></a>
+		<?php
+	}?>
 </h2>
 
-<?php if ( 'home' === $active_tab && !$is_temporary_login ) { ?>
+<?php
+if ( 'home' === $active_tab && !$is_temporary_login ) { ?>
 	<div class="wrap wtlwp wtlwp-settings-wrap" id="temporary-logins">
 		<h2 class="font-semibold text-gray-700">
 			<?php echo esc_html__( 'Temporary Logins', 'temporary-login-without-password' ); ?> 
@@ -103,8 +142,19 @@
 		<?php include WTLWP_PLUGIN_DIR . '/templates/other-plugins.php'; ?>
 	</div>
 
-<?php } else { ?>
+<?php } elseif('tlwp-pricing' === $active_tab) {?>
+	<div class="wrap wtlwp tlwp-pricing" id="wtlwp-logins-pricing">
+		<?php include WTLWP_PLUGIN_DIR . '/templates/pricing.php'; ?>
+	</div>
+
+<?php } elseif('system-info' === $active_tab) { ?>
 	<div class="wrap wtlwp tlwp-sytem-info" id="tlwp-system-info">
 		<?php include WTLWP_PLUGIN_DIR . '/templates/system-info.php'; ?>
 	</div>
 <?php } ?>
+<?php
+/**
+ * Hook to render custom tab content 
+ */
+do_action( 'tlwp_custom_extra_tab_content' );
+?> 
