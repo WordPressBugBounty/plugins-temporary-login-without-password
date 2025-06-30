@@ -156,8 +156,12 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 			$this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_display_admin_notices' );
 			$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'tlwp_show_temporary_access_notice_in_admin_bar', 999 );
 			$this->loader->add_action( 'admin_head', $plugin_admin, 'tlwp_test_mode_notice_admin_bar_css', 999 );
-			$this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_show_promotion_notice', 999 );
-			$this->loader->add_action( 'wp_ajax_tlwp_dismiss_promo_custom_notice', $plugin_admin, 'tlwp_dismiss_promo_custom_notice', 999 );
+			// $this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_show_promotion_notice', 999 );
+			// $this->loader->add_action( 'wp_ajax_tlwp_dismiss_promo_custom_notice', $plugin_admin, 'tlwp_dismiss_promo_custom_notice', 999 );
+
+			$this->loader->add_action( 'admin_notices', $plugin_admin, 'show_tlwp_mailer_promotion_notice', 999 );
+			$this->loader->add_action( 'wp_ajax_tlwp_dismiss_mailer_promotion_notice', $plugin_admin, 'dismiss_tlwp_mailer_promotion_notice', 999 );
+			$this->loader->add_action( 'wp_ajax_tlwp_mailer_notice_clickable', $plugin_admin, 'mailer_notice_clickable' );
 
 			$this->loader->add_filter( 'wpmu_welcome_notification', $plugin_admin, 'disable_welcome_notification', 10, 5 );
 			$this->loader->add_filter( 'plugin_action_links', $plugin_admin, 'disable_plugin_deactivation', 10, 4 );

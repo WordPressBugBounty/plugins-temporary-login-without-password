@@ -720,31 +720,31 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			$promotion_plugin_name = sprintf(__( ' %1$sTemporary Login Without Password%2$s', 'temporary-login-without-password' ), '<b>', '</b>' );
 
 			?>
-		<div class="notice notice-success is-dismissible" id="wtlwp-promotion-custom-notice">
-			<p>
-				<?php
-					echo sprintf( esc_html__( "Launch new %1\$s plugin's pro plan. %2\$s 🚀", 'temporary-login-without-password' ), wp_kses_post( $promotion_plugin_name ), wp_kses_post( $promotion_optin_link ) );
-				?>
-			</p>
-			
-		</div>
-		<script type="text/javascript">
-			jQuery(document).ready(function($) {
-				$('#wtlwp-promotion-custom-notice').on('click', '.notice-dismiss, .wtlwp-promo-link', function() {
-					$.ajax({
-						method: 'POST',
-						url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-						dataType: 'json',
-						data: {
-							action: 'tlwp_dismiss_promo_custom_notice',
-							security: '<?php echo esc_html( wp_create_nonce( 'tlwp-promo-dismiss-action' ) ); ?>'
-						}
-					}).done(function(response){
-						console.log( 'response: ', response );
+			<div class="notice notice-success is-dismissible" id="wtlwp-promotion-custom-notice">
+				<p>
+					<?php
+						echo sprintf( esc_html__( "Launch new %1\$s plugin's pro plan. %2\$s 🚀", 'temporary-login-without-password' ), wp_kses_post( $promotion_plugin_name ), wp_kses_post( $promotion_optin_link ) );
+					?>
+				</p>
+				
+			</div>
+			<script type="text/javascript">
+				jQuery(document).ready(function($) {
+					$('#wtlwp-promotion-custom-notice').on('click', '.notice-dismiss, .wtlwp-promo-link', function() {
+						$.ajax({
+							method: 'POST',
+							url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
+							dataType: 'json',
+							data: {
+								action: 'tlwp_dismiss_promo_custom_notice',
+								security: '<?php echo esc_html( wp_create_nonce( 'tlwp-promo-dismiss-action' ) ); ?>'
+							}
+						}).done(function(response){
+							console.log( 'response: ', response );
+						});
 					});
 				});
-			});
-		</script>
+			</script>
 			<?php
 		}
 
@@ -768,6 +768,119 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 	
 			update_option( 'tlwp_close_promotion_notice', 'yes', false );
 	
+			wp_send_json( $response );
+		}
+
+		public function show_tlwp_mailer_promotion_notice() {
+
+			$screen = get_current_screen();
+
+			if ( $screen->base === 'users_page_wp-temporary-login-without-password' && isset($_GET['tab']) && $_GET['tab'] === 'tlwp-pricing') {
+				return;
+			}
+			
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_tlwp_admin_page() ) {
+				return;
+			}
+
+			$mailer_plugin_path = 'icegram-mailer/icegram-mailer.php';
+
+			if ( is_plugin_active($mailer_plugin_path) ) { 
+				return;
+			}
+
+			if ( file_exists(WP_PLUGIN_DIR . '/' . $mailer_plugin_path) ) {
+				$optin_url = admin_url( 'plugins.php' );
+				$optin_btn_txt = esc_html('Activate Now →', 'temporary-login-without-password' );
+			} else {
+				$optin_url = admin_url( 'plugin-install.php?s=icegram%2520mailer&tab=search&type=term' );
+				$optin_btn_txt = esc_html('Try Now →', 'temporary-login-without-password' );
+			}
+
+			$fallback_notice_dismissed = 'yes' === get_option( 'tlwp_mailer_is_promotion_notice_dismissed', 'no' );
+
+			if ( ! $fallback_notice_dismissed ) {
+				?>
+				<div id="tlwp_es_mailer_promotion_notice" class="notice is-dismissible" style="border-left-width:1px;">
+					<div style="display: flex;gap:0.8em;padding-top:0.5rem;padding-bottom:0.4rem;">
+						<img src="https://ps.w.org/icegram-mailer/assets/icon-128x128.png" style="height:4em;margin-top: 0.1rem;" />
+						<div style="color: rgb(55 65 81);">
+							<p style="font-weight: bolder; font-size:0.8rem; margin:0; font-size:1.1em">
+								<?php echo esc_html__( 'Get 200 Free Emails Every Month!', 'temporary-login-without-password' ); ?>
+							</p>
+
+							<p style="margin:0; font-size:1.1em;font-weight:400;">
+								<?php echo wp_kses_post(
+										sprintf(
+											__( 'Start sending with confidence. No setup needed, no SMTP headaches. Enjoy 200 emails per month absolutely free with <span style="font-weight: 700;">%s</span>.', 'temporary-login-without-password' ),
+											'Icegram Mailer'
+										)
+									); ?>
+								<a href="<?php echo esc_url( $optin_url ); ?>" target="_blank" id="tlwp_mailer_promo_button">
+									<span class="cursor-pointer ml-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white transition duration-150 ease-in-out px-3 py-1 hover:bg-gray-50 hover:text-gray-700 focus:ring-2 focus:ring-blue-200">
+										<?php echo esc_html__( $optin_btn_txt, 'temporary-login-without-password'); ?>
+									</span>
+								</a>
+							</p>
+						</div>
+					</div>
+				</div>
+				<script>
+					jQuery(document).ready(function($) {
+						jQuery('#tlwp_es_mailer_promotion_notice').on('click', '.notice-dismiss, #tlwp-es-mailer-promo-button', function() {
+							jQuery.ajax({
+								method: 'POST',
+								url: "<?php echo admin_url( 'admin-ajax.php' ); ?>",
+								dataType: 'json',
+								data: {
+									action: 'tlwp_dismiss_mailer_promotion_notice',
+									security: '<?php echo wp_create_nonce( 'tlwp-dissmiss-mailer-notice' );?>',
+								}
+							}).done(function(response){
+								console.log( 'response: ', response );
+							});
+						});
+
+						jQuery('#tlwp_es_mailer_promotion_notice').on('click', '#tlwp_mailer_promo_button', function() {
+							jQuery.ajax({
+								method: 'POST',
+								url: "<?php echo admin_url( 'admin-ajax.php' ); ?>",
+								dataType: 'json',
+								data: {
+									action: 'tlwp_mailer_notice_clickable',
+									security: '<?php echo wp_create_nonce( 'tlwp-mailer-notice-clickable' );?>',
+								}
+							}).done(function(response){
+								console.log( 'response: ', response );
+							});
+						});
+					});
+				</script>
+				<?php
+			}
+		}
+
+		public function dismiss_tlwp_mailer_promotion_notice() {
+			$response = array(
+				'status' => 'success',
+			);
+
+			check_ajax_referer( 'tlwp-dissmiss-mailer-notice', 'security' );
+
+			update_option( 'tlwp_mailer_is_promotion_notice_dismissed', 'yes', false );
+
+			wp_send_json( $response );
+		}
+
+		public function mailer_notice_clickable() {
+			$response = array(
+				'status' => 'success',
+			);
+
+			check_ajax_referer( 'tlwp-mailer-notice-clickable', 'security' );
+
+			update_option( 'tlwp_mailer_is_tried', 'yes', false );
+
 			wp_send_json( $response );
 		}
 
@@ -878,11 +991,11 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			}
 
 			$allow_display_notices = array(
-			'tlwp_show_promotion_notice',
 			'show_review_notice',
 			'tlwp_display_admin_notices',
 			'tlwp_show_feature_survey',
 			'in_app_offer',
+			'show_tlwp_mailer_promotion_notice',
 			);
 
 			$filters = array(
