@@ -5,7 +5,7 @@ Tags: temporary access, developer access, passwordless login, magic pin, secure 
 Requires at least: 3.0.1
 Requires PHP: 5.3
 Tested up to: 6.8
-Stable tag: 1.9.3
+Stable tag: 1.9.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -191,11 +191,15 @@ Yes. There is no limit to create temporary logins. You can create as many tempor
 
 == Upgrade Notice ==
 
-= 1.9.3 =
+= 1.9.4 =
 
-* Fix: Small UI fix
+* Fix: "PHP Warning: Cannot modify header information - headers already sent" [PRO]
 
 == Changelog ==
+
+**1.9.4 [2025-08-04]**
+
+* Fix: "PHP Warning: Cannot modify header information - headers already sent" [PRO]
 
 **1.9.3 [2025-06-26]**
 
