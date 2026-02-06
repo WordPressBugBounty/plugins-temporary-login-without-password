@@ -410,16 +410,13 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 		public static function get_temporary_logins( $role = '' ) {
 
 			$args = array(
-			'fields'     => 'all',
-			'meta_key'   => '_wtlwp_expire',
-			'order'      => 'DESC',
-			'orderby'    => 'meta_value',
-			'meta_query' => array(
-				0 => array(
-					'key'   => '_wtlwp_user',
-					'value' => 1,
+				'fields'     => 'all',
+				'meta_query' => array(
+					0 => array(
+						'key'   => '_wtlwp_user',
+						'value' => 1,
+					),
 				),
-			),
 			);
 
 			if ( ! empty( $role ) ) {
@@ -427,10 +424,18 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			}
 
 			$users = new WP_User_Query( $args );
-
 			$users_data = $users->get_results();
 
-			return $users_data;
+			if ( ! empty( $users_data ) ) {
+				usort( $users_data, function( $a, $b ) {
+					$expire_a = (int)get_user_meta( $a->ID, '_wtlwp_expire', true );
+					$expire_b = (int)get_user_meta( $b->ID, '_wtlwp_expire', true );
+					
+					return $expire_b - $expire_a;
+				} );
+			}
+
+			return $users_data; 
 
 		}
 
@@ -623,17 +628,14 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			}
 
 			$args = array(
-			'fields'     => $fields,
-			'meta_key'   => '_wtlwp_expire',
-			'order'      => 'DESC',
-			'orderby'    => 'meta_value',
-			'meta_query' => array(
-				0 => array(
-					'key'     => '_wtlwp_token',
-					'value'   => sanitize_text_field( $token ),
-					'compare' => '=',
+				'fields'     => $fields, 
+				'meta_query' => array(
+					0 => array(
+						'key'     => '_wtlwp_token',
+						'value'   => sanitize_text_field( $token ),
+						'compare' => '=',
+					),
 				),
-			),
 			);
 
 			$users = new WP_User_Query( $args );
@@ -641,6 +643,14 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			$users_data = $users->get_results();
 			if ( empty( $users_data ) ) {
 				return false;
+			}
+
+			if ( count( $users_data ) > 1 ) {
+				usort( $users_data, function( $a, $b ) {
+					$expire_a = get_user_meta( $a->ID, '_wtlwp_expire', true );
+					$expire_b = get_user_meta( $b->ID, '_wtlwp_expire', true );
+					return $expire_b - $expire_a; 
+				} );
 			}
 
 			foreach ( $users_data as $key => $user ) {

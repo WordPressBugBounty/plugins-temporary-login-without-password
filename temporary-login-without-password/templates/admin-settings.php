@@ -180,4 +180,3 @@ if ( 'home' === $active_tab && !$is_temporary_login ) { ?>
  * Hook to render custom tab content 
  */
 do_action( 'tlwp_custom_extra_tab_content' );
-?> 

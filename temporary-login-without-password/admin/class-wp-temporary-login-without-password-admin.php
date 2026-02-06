@@ -231,30 +231,30 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			include $_template_file;
 		}
 
-		//Temporary user creation by one click
-		public function maybe_create_one_click_user() {
-			$one_click_status = get_option( 'wtlwp_one_click_user_status' );
+	//Temporary user creation by one click
+	public function maybe_create_one_click_user() {
+		$one_click_status = get_option( 'wtlwp_one_click_user_status' );
 
-			if ( 'created' === $one_click_status ) {
-				return; // One-click user already created.
-			}
-
-			$tlwp_users = get_users( array(
-				'meta_key'   => '_wtlwp_user',// phpcs:ignore WordPress.DB.SlowDBQuery
-				'meta_value' => true, // phpcs:ignore WordPress.DB.SlowDBQuery
-				'number'     => 1,
-			) );
-
-			if ( ! empty( $tlwp_users ) ) {
-				return;
-			}
-
-			if ( current_user_can( 'manage_options' ) && 'pending' === $one_click_status ) {
-				self::create_one_click_user( );
-			}
+		if ( 'created' === $one_click_status || 'creating' === $one_click_status ) {
+			return; // One-click user already created or creation in progress.
 		}
 
+		$tlwp_users = get_users( array(
+			'meta_key'   => '_wtlwp_user',// phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_value' => true, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'number'     => 1,
+		) );
 
+		if ( ! empty( $tlwp_users ) ) {
+			update_option( 'wtlwp_one_click_user_status', 'created' );
+			return;
+		}
+
+		if ( current_user_can( 'manage_options' ) && 'pending' === $one_click_status ) {
+			update_option( 'wtlwp_one_click_user_status', 'creating' );
+			self::create_one_click_user( );
+		}
+	}
 		/**
 		 * Create a Temporary user
 		 *
@@ -331,51 +331,55 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 		
 		}
 
-		public static function create_one_click_user() {
+	public static function create_one_click_user() {
    
-			$data         = self::get_user_creation_data();
-			$data['source_of_creation'] = 'one-click';
-			$result       = array( 'status' => 'error' );
-			$redirect_link = '';
-			$user_id      = 0;
+		$data         = self::get_user_creation_data();
+		$data['source_of_creation'] = 'one-click';
+		$result       = array( 'status' => 'error' );
+		$redirect_link = '';
+		$user_id      = 0;
 
-			if ( false === Wp_Temporary_Login_Without_Password_Common::can_manage_wtlwp() ) {
-				$result['message'] = 'unauthorised_access';
+		if ( false === Wp_Temporary_Login_Without_Password_Common::can_manage_wtlwp() ) {
+			$result['message'] = 'unauthorised_access';
+			update_option( 'wtlwp_one_click_user_status', 'pending' );
+		} else {
+			$user = Wp_Temporary_Login_Without_Password_Common::create_new_user( $data );
+
+			if ( isset( $user['error'] ) && true === $user['error'] ) {
+				$result['message'] = 'user_creation_failed';
+				update_option( 'wtlwp_one_click_user_status', 'pending' );
 			} else {
-				$user = Wp_Temporary_Login_Without_Password_Common::create_new_user( $data );
+				$user_id = isset( $user['user_id'] ) ? $user['user_id'] : 0;
 
-				if ( isset( $user['error'] ) && true === $user['error'] ) {
-					$result['message'] = 'user_creation_failed';
-				} else {
-					$user_id = isset( $user['user_id'] ) ? $user['user_id'] : 0;
-
-					if ( $user_id ) {
-						set_transient( 'wtlwp_one_click_user_id', $user_id, 15 * HOUR_IN_SECONDS );
-						set_transient( 'wtlwp_one_click_user_active', 'yes', 15 * HOUR_IN_SECONDS );
-						update_option( 'wtlwp_one_click_user_status', 'created' );
-						update_user_meta( $user_id, '_wtlwp_expire', Wp_Temporary_Login_Without_Password_Common::get_current_gmt_timestamp() );
-					}
-
-					$result['status']  = 'success';
-					$result['message'] = 'user_created';
-				}
-
-				$redirect_link = Wp_Temporary_Login_Without_Password_Common::get_redirect_link( $result );
 				if ( $user_id ) {
-					$wtlwp_generated_url = urlencode(  Wp_Temporary_Login_Without_Password_Common::get_login_url( $user_id ) );
-					$redirect_link       = add_query_arg( 'wtlwp_generated_url', $wtlwp_generated_url, $redirect_link );
+					set_transient( 'wtlwp_one_click_user_id', $user_id, 15 * HOUR_IN_SECONDS );
+					set_transient( 'wtlwp_one_click_user_active', 'yes', 15 * HOUR_IN_SECONDS );
+					// Mark as created successfully
+					update_option( 'wtlwp_one_click_user_status', 'created' );
+					update_user_meta( $user_id, '_wtlwp_expire', Wp_Temporary_Login_Without_Password_Common::get_current_gmt_timestamp() );
+				} else {
+					// User creation returned no user_id, reset status
+					update_option( 'wtlwp_one_click_user_status', 'pending' );
 				}
+
+				$result['status']  = 'success';
+				$result['message'] = 'user_created';
 			}
 
-			if ( empty( $redirect_link ) ) {
-				$redirect_link = Wp_Temporary_Login_Without_Password_Common::get_redirect_link( $result );
+			$redirect_link = Wp_Temporary_Login_Without_Password_Common::get_redirect_link( $result );
+			if ( $user_id ) {
+				$wtlwp_generated_url = urlencode(  Wp_Temporary_Login_Without_Password_Common::get_login_url( $user_id ) );
+				$redirect_link       = add_query_arg( 'wtlwp_generated_url', $wtlwp_generated_url, $redirect_link );
 			}
-
-			wp_safe_redirect( $redirect_link, 302 );
-			exit();
 		}
 
+		if ( empty( $redirect_link ) ) {
+			$redirect_link = Wp_Temporary_Login_Without_Password_Common::get_redirect_link( $result );
+		}
 
+		wp_safe_redirect( $redirect_link, 302 );
+		exit();
+	}
 		private static function get_user_creation_data() {
 			
 				$tlwp_settings       = maybe_unserialize( get_option( 'tlwp_settings', array() ) );
@@ -401,7 +405,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 		 * @return array Result containing status, login URL, user ID, and message.
 		 */
 		public static function generate_tlwp_temporary_login_link() {
-			error_log( __FILE__ . " " . __LINE__ . ' var:' . print_r( "var", true ) );
+			
 			$data                = self::get_user_creation_data();
 			$data['source_of_creation'] = 'tlwp-integration';
 			$result              = array( 'status' => 'error' );
