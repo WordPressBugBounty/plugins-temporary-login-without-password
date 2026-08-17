@@ -1,202 +1,166 @@
 === Temporary Login Without Password ===
-Contributors: storeapps, icegram, niravmehta, sandhyam, mansi shah
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BMFRMVXQ87JWA&source=url
-Tags: temporary access, developer access, passwordless login, magic pin, secure login
+Contributors: storeapps, icegram, niravmehta, sandhyam, mansi-shah
+Tags: temporary admin access, passwordless login, guest login, developer access, expiring login
 Requires at least: 3.0.1
+Tested up to: 7.0
+Stable tag: 1.9.8
 Requires PHP: 5.3
-Tested up to: 6.8
-Stable tag: 1.9.7
-License: GPLv3
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Create self-expiring, temporary admin accounts. Easily share direct login links (no need for username/password) with your developers or editors.
+Give developers or support staff temporary admin access to your WordPress site — no username, no password, and it expires automatically.
 
 == Description ==
 
-Create secure, self-expiring ⏱️, automatic login links 🔗 for WordPress. Give them to developers when they ask for admin access to your site. Or an editor for a quick review of work done. Login works just by opening the link, no password needed.
+Temporary Login Without Password lets you create a self-expiring login link and share it with a developer, support agent, or guest editor — instead of handing over your username and password.
 
-Using the "Temporary Login Without Password" plugin you can create a self-expiring account for someone and give them a special link with which they can login to your WordPress without needing a username and password.
+The person just clicks the link and they're logged in. No account setup, no shared credentials, no password to remember or revoke later. You choose the role and the expiry, and access shuts off automatically when the time is up.
 
-You can choose when the login expires, as well as the role of the temporary account.
+**How it helps**
 
-Really useful when you need to give admin access to a developer for support or for performing routine tasks.
+Every time you share your real admin login with an outside developer, you're trusting them with permanent access — and you have to remember to change the password after. TLWP removes that risk entirely. Generate a link, set it to expire in an hour, a day, or a custom date, and you're done.
 
-Read [this article](https://www.storeapps.org/create-secure-login-without-password-for-wordpress/) to know more about what's the Current Problem – Creating a Separate Admin Login for Outsiders (Devs/ Guest bloggers) and how to avoid this pain, Top Benefits of using this plugin & Why and Who need Temporary Login links.
+= Benefits =
 
-#### **Benefits of Temporary Logins**
+* Create unlimited temporary logins
+* Assign any WordPress role to a temporary account
+* No username or password needed — login is just a click
+* Set expiry by time (hour, day, week, month) or a custom date
+* Redirect the user to a specific page after login
+* Set a language for the temporary user
+* See last login time and number of times accessed
+* Track what each temporary user did with detailed activity logs
 
-> ➡️  Create unlimited temporary logins
-> ➡️  Create temporary logins with any role
-> ➡️  No username & password required. Login with just a simple link
-> ➡️  Set account expiry. So, a temporary user can't login after the expiry time
-> ➡️  Various expiration options like one day, one week, one month, and many more. Also, set a custom date
-> ➡️  Redirect user to a specific page after login
-> ➡️  Set a language for a temporary user
-> ➡️  See the last logged in time of a temporary user
-> ➡️  Also see, how many times a temporary user accessed your setup
-> ➡️  Track user activity with detailed logs to know what each temporary user did
+= Who this is for =
 
-#### **For Developers**
+* **Site owners** who need to give a developer quick access without sharing real credentials
+* **Agencies** onboarding client sites for support or maintenance
+* **Bloggers** giving guest writers or editors short-term review access
+* **Developers** who want a clean, auditable way to request site access from clients
 
-If you need an admin access to your client's WordPress setup to resolve any issues, use following template to ask your client to give you a temporary access to their WordPress setup.
+= For Developers =
+
+If you need admin access to a client's WordPress site to resolve an issue, send them this:
 
 > Hi {%customer_name%},
 >
-> To allow me to investigate on your site, install & activate the free WordPress plugin - [Temporary Login Without Password](https://wordpress.org/plugins/temporary-login-without-password/), and give me admin access to your site via the temporary link generated. Once I'll get the admin access, I'll check your site & will try to resolve the issue.
+> To allow me to investigate your site, please install the free plugin Temporary Login Without Password, and share the temporary admin link it generates. Once I have access, I'll check the site and try to resolve the issue.
 >
-> **Note**:
-> Keep the expiry of a temporary login link for one month. Send the created login link as a reply to this email.
+> Note: Set the expiry to one month, and send me the generated link as a reply to this email.
 
-### Temporary Login Without Password Pro Features
-➡️ Limit Link Usage: Set a maximum number of times a temporary login link can be used, ensuring controlled, secure access.
+= TLWP Pro =
 
-➡️ Instant Admin Alerts: Receive notifications each time a temporary login is accessed, keeping you informed of all activity.
+Free covers the essentials. Pro adds:
 
-➡️ Activity Log: View detailed activity of each temporary user to monitor what actions they performed while logged in.
+* **Limit link usage** — cap how many times a login link can be used
+* **Instant admin alerts** — get notified every time a temporary login is accessed
+* **Full activity log** — see exactly what actions each temporary user performed
 
-Ready to take your security and convenience to the next level? 
-**[Upgrade to TLWP Pro](https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1)** today to unlock our advanced features. Experience the full power of secure, temporary, passwordless access for your WordPress / WooCommerce site.
+[Upgrade to TLWP Pro](https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1)
 
+= Our other plugins =
 
-#### What users have to say about Temporary Login Without Password?
-
-👉 **It works with WordPress.com business plan!**
-> I love this plugin! I got the impression that Temporary Login Without Password plugin would only work with WordPress.org sites. When I had a problem with another plugin, I reached out to their tech support. They recommended Temporary Login. I crossed my fingers, installed it, and it worked like a charm. No more worrying about possibly compromising my sites. When tech support was done, I went into the settings and revoked access. This is a game changer!
-> - [Suzanne Loeb](https://wordpress.org/support/topic/it-works-with-wordpress-com-business-plan/)
-
-👉 **Convenient. No rabbit holes**
-> I can’t say I’ve used a whole bunch of these plugins, but I can say I’ve used 2 or 3. This one was the most straight forward and rushing through it I still didn’t run into any issues. The login was shot to the company I needed to let in and I was able to get back to marking things off of my checklist. Highly recommend to anyone that is needing to make a temporary user account for the first time. There’s literally nowhere to get confused from my personal experience
-> - [Peter Higgins](https://wordpress.org/support/topic/convenient-no-rabbit-holes/)
-
-👉 **Clear and efficient.**
-> Clear and efficient. Nothing to add !
-> Continue like that !
-> Make the world of the web even more fun for all pro and amateur users!
-> - [muten7](https://wordpress.org/support/topic/clear-and-efficient-2/)
-
-👉 **Excellent Plugin**
-> Having problems with another plugin the developer recommended TPWP. It does exactly as it states. The developer was able to identify the bug, done without comprising security. The fact it records the access you have granted is a another advantage.
-> - [mickpamg](https://wordpress.org/support/topic/excellent-plugin-3772/)
-
-👉 **A huge help and easy!**
-> This plugin was just what I needed to make it easy for support people to come in and get their assessments done then I don’t have to worry about revoking permission…this takes care of that for me! Love it!!!
-> - [bfauscette](https://wordpress.org/support/topic/a-huge-help-and-easy/)
-
-Go to [Temporary Login Without Password plugin review section](https://wordpress.org/support/plugin/temporary-login-without-password/reviews/) and read our recent reviews.
-
-**Spread The Love ❤️**
-
-If you like Temporary Login Without Password, please leave a [five stars ⭐⭐⭐⭐⭐](https://wordpress.org/support/plugin/temporary-login-without-password/reviews/#new-post) and also spread the word about it via [Facebook](https://www.facebook.com/sharer.php?u=https://wordpress.org/plugins/temporary-login-without-password/) and [Twitter](https://twitter.com/intent/tweet?url=https://wordpress.org/plugins/temporary-login-without-password/). That helps fellow website owners assess Temporary Login Without Password easily and benefit from it!
-
-**What's Next**
-
-If you like this plugin then consider checking out our other solutions:
-
-[Icegram Express](https://wordpress.org/plugins/email-subscribers/) - A complete newsletter plugin which lets you collect leads, send automated new blog post notification emails, create & send broadcasts, and also manage them all in one single place.
-
-[Icegram Mailer](https://wordpress.org/plugins/icegram-mailer/) - Reliable built‑in email delivery for WordPress & WooCommerce with real‑time logs, analytics, and a free 200‑email plan.
-
-[Icegram Engage](https://wordpress.org/plugins/icegram/) - Popups, Welcome Bar, Opt-ins & Lead Generation plugin
-
-[Icegram Collect](https://wordpress.org/plugins/icegram-rainmaker/) - Best form plugin on WordPress
-
-[Smart Manager](https://wordpress.org/plugins/smart-manager-for-wp-e-commerce/) - Manage & Bulk edit Products, Orders & more..
-
-[Offermative](https://wordpress.org/plugins/offermative-discount-pricing-related-products-upsell-funnels-for-woocommerce/) - Dynamic discount pricing, related product recommendations, upsells and funnels for WooCommerce.
-
-[Post / Page Duplicate](https://wordpress.org/plugins/duplicate-post-page-copy-clone-wp/) – Ultimate one‑click content duplicator for WordPress, letting you clone posts, pages & custom post types effortlessly
-
-[Icegram Cookie Manager](https://wordpress.org/plugins/icegram-cookie-manager/) – Customizable cookie consent banner with privacy policy links and styling options for WordPress
-
-[Switch User Login](https://wordpress.org/plugins/switch-user-login-by-icegram/) – Instantly switch between WordPress user accounts from the admin bar for seamless testing, debugging, and multisite/WooCommerce management
-
-Also, check our other [Premium WooCommerce plugins.](https://www.storeapps.org/shop/?utm_source=wprepo&utm_medium=tlwp&utm_campaign=sa_products_upsell&utm_content=readme)
-
-Do you use WooCommerce? Our analytics tool [Putler](https://www.putler.com/?utm_source=wprepo&utm_medium=tlwp&utm_campaign=putler_outreach&utm_content=readme) will help you enriches your store data. Using Putler, you’ll understand your business better and make profitable decisions quickly.
-
+* [Icegram Express](https://wordpress.org/plugins/email-subscribers/) — newsletter plugin for leads, broadcasts, and automated post notifications
+* [Icegram Mailer](https://wordpress.org/plugins/icegram-mailer/) — reliable email delivery for WordPress & WooCommerce
+* [Icegram Engage](https://wordpress.org/plugins/icegram/) — popups, welcome bar, and opt-ins
+* [Post / Page Duplicate](https://wordpress.org/plugins/duplicate-post-page-copy-clone-wp/) — one-click content duplicator
+* [Switch User Login](https://wordpress.org/plugins/switch-user-login-by-icegram/) — switch between WordPress accounts from the admin bar
 
 == Installation ==
 
-Option 1:
+**Option 1: Search and install**
 
-1. Go to WordPress Dashboard. Locate Plugins -> Add New
-2. Search **Temporary Login Without Password** plugin using the search option
-3. Find the plugin and click Install Now button
-4. After installation, click on the Activate Plugin link to activate the plugin.
+1. Go to WordPress Dashboard → Plugins → Add New
+2. Search for "Temporary Login Without Password"
+3. Click Install Now, then Activate
 
-Option 2:
+**Option 2: Manual upload**
 
-1. Download the plugin [temporary-login-without-password.zip](https://downloads.wordpress.org/plugins/temporary-login-without-password.zip)
-2. Go to WordPress Dashboard. Locate Plugins -> Add New
-3. Click on the Upload Plugin link from the top
-4. Upload the downloaded **temporary-login-without-password.zip** file and click on Install Now
-5. After installation, click on the Activate Plugin link to activate the plugin.
+1. Download the plugin zip from wordpress.org
+2. Go to Plugins → Add New → Upload Plugin
+3. Upload the zip file and click Install Now
+4. Activate the plugin
 
 == Frequently Asked Questions ==
 
-= 1. Do I need a username & password to login using Temporary Login? =
+= Do I need a username and password to use a temporary login? =
 
-No. Temporary Login Without Password plugin creates a temporary login link to login to WordPress. The user only have
-to click on the temporary login link and they will automatically login to WordPress.
+No. TLWP generates a unique login link. The person you share it with clicks the link and is logged in automatically — there's no username or password involved at any point, so there's nothing for them to forget or for you to reset later.
 
-= 2. Can I disable the Temporary user manually? =
+= Can I disable a temporary user manually before their access expires? =
 
-Yes, you can disable the temporary user manually.
+Yes. Go to Temporary Login in your dashboard and click Deactivate next to the user. This revokes access immediately, but keeps their activity log so you can review what they did. You can reactivate the same account later if needed.
 
-= 3. Can I delete the temporary user?
+= Can I delete a temporary user completely? =
 
-Yes, you can delete a temporary user.
+Yes. Deleting a temporary user removes their login access and account. If you want a record of what they accessed before removing them, review the activity log first, since deleting the user also removes their history.
 
-= 4. Can temporary user login with username & password?
+= Can a temporary user log in using a username and password instead of the link? =
 
-No. temporary user can't login with username & password.
+No. Temporary accounts can only be accessed through the generated link. This is intentional — it's what keeps the access self-expiring and prevents the credentials from being reused or shared outside the link.
 
-= 5. Can I convert a temporary user into a normal user?
+= Can I convert a temporary user into a permanent user? =
 
-No. at this moment it's not possible to do this.
+Not directly within the plugin at this time. If you need someone to have permanent access, create a regular WordPress user account for them separately and deactivate the temporary one.
 
-= 6. Can I set a different language other than the default language for a temporary user?
+= Can I set a different language for a temporary user? =
 
-Yes. Many times your support person doesn't speak the same language as you speak. So, it would be a good choice to create a temporary account for them and set their preferred language.
+Yes. When creating the temporary login, you can set a preferred language for that account. This is useful when a support person or developer doesn't speak your site's default language — they'll see the admin dashboard in their own language.
 
-= 7. Is there any possibility to change the expiry range to minutes? =
+= Can I set the login expiry in minutes instead of hours or days? =
 
-There is no setting using which you can set the expiry range of temporary logins to minutes. But, you can set it to minutes using WordPress filters (programmatically). [Please refer to this thread](https://wordpress.org/support/topic/additional-expiry-option/).
+Not from the settings screen directly, but you can set it in minutes using a WordPress filter. See the [community thread](https://wordpress.org/support/topic/additional-expiry-option/) for the exact filter and code snippet.
 
-= 8. If I give administrator access to a temporary login, will that person have the ability to delete other users (even other admins)? =
+= If I give a temporary login administrator access, can they delete other users? =
 
-No. Temporary Users can't delete other users.
+No. Temporary users are restricted from deleting other users, including other admins, regardless of the role you assign them. This keeps a temporary admin account from being used to lock you out of your own site.
 
-= 9. How to redirect temporary user to a specific page after login? =
+= How do I redirect a temporary user to a specific page after they log in? =
 
-You can select the page where you want to redirect your temporary user after login while creating a temporary login. Alternatively, you can use the "redirect_to" query string parameter to redirect them to other pages. [Please refer to this thread](https://wordpress.org/support/topic/redirect-user-after-login-2/).
+You can select a redirect page while creating the temporary login, or use the redirect_to query parameter in the link itself. See [this thread](https://wordpress.org/support/topic/redirect-user-after-login-2/) for examples.
 
-= 10. Can I use a fake email address or my email address to generate a temporary login link for others? =
+= Can I use a fake or placeholder email address to create a temporary login? =
 
-Yes, you can use a fake email address or your email address to generate temporary login links. But, we recommend using a valid email address of the person to whom you want to give temporary access. It will help you to track the activity of that person.
+Yes, technically any email works. But we recommend using the real email address of the person you're granting access to — it makes it easier to track their activity and confirms the link reaches the right person.
 
-= 11. Does plugin delete all data after deleting the plugin? =
+= Does the plugin delete all its data when I uninstall it? =
 
-Yes, we have provided that option to delete the data on plugin delete. You can also keep the data if you wish to activate the plugin in the future.
+Yes, but only if you choose to. There's a setting to delete all temporary login data on plugin removal. If you leave it unchecked, your data stays intact in case you reactivate the plugin later.
 
-= 12. We want to generate 10 temporary logins. Can we do that?
+= Is there a limit to how many temporary logins I can create? =
 
-Yes. There is no limit to create temporary logins. You can create as many temporary logins as you wish.
+No. You can create as many temporary logins as you need, with no cap on the free or pro version.
+
+= Does this create a security risk on my site? =
+
+No — it's designed to reduce risk compared to sharing your real login. Every temporary account expires automatically, can't reset a password, can't delete other users, and every action is logged. You stay in control of exactly what access is granted and for how long.
+
+= Does TLWP work with WooCommerce sites? =
+
+Yes. TLWP works on any WordPress site, including WooCommerce stores. It's commonly used to give store developers or support staff temporary access without sharing checkout, payment, or customer-facing credentials.
+
+= Does it work on WordPress Multisite? =
+
+Yes. On Multisite, a Super Admin can create a temporary Super Admin account, and access can be scoped the same way as on a single site.
 
 == Screenshots ==
 
-1. Create a new Temporary Login.
-2. List of all (Active/Expired) Temporary Login.
-3. Temporary Login settings panel.
+1. Create a new temporary login — set the role, expiry, and language in one screen.
+2. See every active and expired login at a glance, with last-access time.
+3. Configure default expiry, redirect, and cleanup behavior from settings.
+4. Track exactly what a temporary user did with detailed activity logs.
 
 == Upgrade Notice ==
 
-= 1.9.7 =
+= 1.9.8 =
 
-* Fix: Multiple temporary logins were getting generated in some cases
-* Update: Language translation file
+* Update: Compatibility with WP 7.0
 
 == Changelog ==
+
+**1.9.8 [2026-08-17]**
+
+* Update: Compatibility with WP 7.0
 
 **1.9.7 [2025-12-22]**
 
@@ -485,7 +449,7 @@ create a new temporary login.
 
 **1.5.1 [2018-01-19]**
 
-* Fix: Parse error: syntax error, unexpected ‘[‘ (PHP < 5.4)
+* Fix: Parse error: syntax error, unexpected â€˜[â€˜ (PHP < 5.4)
 
 **1.5 [2018-01-08]**
 
