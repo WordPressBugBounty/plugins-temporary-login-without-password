@@ -112,7 +112,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 
 			} else {
 
-				if ( is_multisite() && ! empty( $data['super_admin'] ) && 'on' === $data['super_admin'] ) {
+				if ( is_multisite() && is_super_admin() && ! empty( $data['super_admin'] ) && 'on' === $data['super_admin'] ) {
 
 					// Grant super admin access to this temporary users
 					grant_super_admin( $user_id );
@@ -164,7 +164,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 		 */
 		public static function update_user( $user_id = 0, $data = array() ) {
 
-			if ( false === self::can_manage_wtlwp() || ( 0 === $user_id ) ) {
+			if ( false === self::can_manage_wtlwp() || ( 0 === $user_id ) || ! self::is_valid_temporary_login( $user_id, false ) ) {
 				return 0;
 			}
 
@@ -195,7 +195,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			}
 
 
-			if ( is_multisite() && ! empty( $data['super_admin'] ) && 'on' === $data['super_admin'] ) {
+			if ( is_multisite() && is_super_admin() && ! empty( $data['super_admin'] ) && 'on' === $data['super_admin'] ) {
 				grant_super_admin( $user_id );
 			}
 
@@ -789,6 +789,13 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 			$manage_login = false;
 			if ( 'disable' === $action ) {
 				$manage_login = update_user_meta( $user_id, '_wtlwp_expire', self::get_current_gmt_timestamp() );
+
+				// Security: delete Application Passwords & destroy active session tokens upon revocation.
+				self::delete_user_application_passwords( $user_id );
+				if ( class_exists( 'WP_Session_Tokens' ) ) {
+					$sessions = WP_Session_Tokens::get_instance( $user_id );
+					$sessions->destroy_all();
+				}
 			} elseif ( 'enable' === $action ) {
 				$manage_login = update_user_meta( $user_id, '_wtlwp_expire', self::get_user_expire_time() );
 			}
@@ -897,6 +904,12 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 				foreach ( $temporary_logins as $user ) {
 					if ( $user instanceof WP_User ) {
 						$user_id = $user->ID;
+
+						self::delete_user_application_passwords( $user_id );
+						if ( class_exists( 'WP_Session_Tokens' ) ) {
+							$sessions = WP_Session_Tokens::get_instance( $user_id );
+							$sessions->destroy_all();
+						}
 
 						wp_delete_user( $user_id ); // Delete User
 
@@ -1389,6 +1402,23 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 
 			return (int) $count;
 			
+		}
+
+		/**
+		 * Delete all application passwords for a specified user
+		 *
+		 * @param int $user_id
+		 */
+		public static function delete_user_application_passwords( $user_id = 0 ) {
+			if ( empty( $user_id ) ) {
+				return;
+			}
+
+			if ( class_exists( 'WP_Application_Passwords' ) && method_exists( 'WP_Application_Passwords', 'delete_all_application_passwords' ) ) {
+				WP_Application_Passwords::delete_all_application_passwords( $user_id );
+			}
+
+			delete_user_meta( $user_id, '_application_passwords' );
 		}
 	}
 }

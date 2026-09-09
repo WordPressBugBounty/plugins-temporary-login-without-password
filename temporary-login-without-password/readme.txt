@@ -2,8 +2,8 @@
 Contributors: storeapps, icegram, niravmehta, sandhyam, mansi-shah
 Tags: temporary admin access, passwordless login, guest login, developer access, expiring login
 Requires at least: 3.0.1
-Tested up to: 7.0
-Stable tag: 1.9.8
+Tested up to: 7.1
+Stable tag: 1.9.9
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -152,11 +152,19 @@ Yes. On Multisite, a Super Admin can create a temporary Super Admin account, and
 
 == Upgrade Notice ==
 
-= 1.9.8 =
+= 1.9.9 =
 
-* Update: Compatibility with WP 7.0
+* Improvements: Application Passwords are now revoked when a temporary login is disabled, deleted, or expires [Thanks to BaptouTatis]
+* Improvements: Added additional permission checks for managing temporary users and granting multisite Super Admin access [Thanks to BaptouTatis]
+* Update: Tested up to WordPress 7.1
 
 == Changelog ==
+
+**1.9.9 [2026-09-09]**
+
+* Improvements: Application Passwords are now revoked when a temporary login is disabled, deleted, or expires [Thanks to BaptouTatis]
+* Improvements: Added additional permission checks for managing temporary users and granting multisite Super Admin access [Thanks to BaptouTatis]
+* Update: Tested up to WordPress 7.1
 
 **1.9.8 [2026-08-17]**
 

@@ -37,6 +37,18 @@ class Wp_Temporary_Login_Without_Password_Public {
 		$this->version     = $version;
 
 		add_filter( 'tlwp_login_redirect', array( $this, 'redirect_after_login' ), 10, 2 );
+
+		/*
+		 * Security: Disable Application Passwords feature for temporary logins.
+		 */
+		add_filter( 'wp_is_application_passwords_available_for_user', array( $this, 'disable_app_passwords_for_temporary_user' ), 10, 2 );
+
+		/*
+		 * Security: Enforce temporary login expiry across all channels (REST, XML-RPC, AJAX, Frontend)
+		 * and block temporary users from authenticating via Application Password.
+		 */
+		add_filter( 'determine_current_user', array( $this, 'block_expired_temp_user_app_password_auth' ), 30 );
+		add_filter( 'authenticate',           array( $this, 'block_expired_temp_user_xmlrpc_auth' ), 30, 3 );
 	}
 
 	/**
@@ -102,6 +114,10 @@ class Wp_Temporary_Login_Without_Password_Public {
 					wp_set_current_user( $temporary_user_id, $temporary_user_login );
 					wp_set_auth_cookie( $temporary_user_id );
 
+					// Security (Layer 3): purge any Application Passwords that may have been
+					// created in a previous session so stale credentials cannot persist.
+					Wp_Temporary_Login_Without_Password_Common::delete_user_application_passwords( $temporary_user_id );
+
 					// Set login count
 					$login_count_key = '_wtlwp_login_count';
 					$login_count     = get_user_meta( $temporary_user_id, $login_count_key, true );
@@ -136,6 +152,11 @@ class Wp_Temporary_Login_Without_Password_Public {
 			$user_id = get_current_user_id();
 			if ( ! empty( $user_id ) && Wp_Temporary_Login_Without_Password_Common::is_valid_temporary_login( $user_id, false ) ) {
 				if ( Wp_Temporary_Login_Without_Password_Common::is_login_expired( $user_id ) ) {
+
+					// Security (Layer 2 – natural expiry): delete Application Passwords so
+					// the expired account cannot authenticate via REST API or XML-RPC.
+					Wp_Temporary_Login_Without_Password_Common::delete_user_application_passwords( $user_id );
+
 					wp_logout();
 					wp_safe_redirect( home_url() );
 					exit();
@@ -148,6 +169,23 @@ class Wp_Temporary_Login_Without_Password_Public {
 					if ( ! empty( $page ) && in_array( $page, $bloked_pages ) || ( ! empty( $pagenow ) && ( in_array( $pagenow, $bloked_pages ) ) ) || ( ! empty( $pagenow ) && ( 'users.php' === $pagenow && isset( $_GET['action'] ) && ( 'deleteuser' === $_GET['action'] || 'delete' === $_GET['action'] ) ) ) ) { //phpcs:ignore
 						wp_die( esc_attr__( "You don't have permission to access this page", 'temporary-login-without-password' ) );
 					}
+
+					// Security (Layer 1): prevent the temporary user from creating new
+					// Application Passwords, which would survive session revocation.
+					add_filter(
+						'wp_create_application_password',
+						function( $created, $user, $args ) use ( $user_id ) {
+							if ( (int) $user->ID === (int) $user_id ) {
+								return new WP_Error(
+									'tlwp_app_password_denied',
+									__( 'Application Passwords cannot be created for temporary logins.', 'temporary-login-without-password' )
+								);
+							}
+							return $created;
+						},
+						10,
+						3
+					);
 
 				}
 			}
@@ -173,6 +211,99 @@ class Wp_Temporary_Login_Without_Password_Public {
 			if ( $is_valid_temporary_login ) {
 				$user = new WP_Error( 'denied', __( "ERROR: User can't find.", 'temporary-login-without-password' ) );
 			}
+		}
+
+		return $user;
+	}
+
+	/**
+	 * Disable Application Passwords feature entirely for temporary users.
+	 *
+	 * Hooked to `wp_is_application_passwords_available_for_user`.
+	 *
+	 * @param bool    $available Whether application passwords are available.
+	 * @param WP_User $user      The user object.
+	 *
+	 * @return bool
+	 */
+	public function disable_app_passwords_for_temporary_user( $available, $user ) {
+		if ( $user instanceof WP_User && Wp_Temporary_Login_Without_Password_Common::is_valid_temporary_login( $user->ID, false ) ) {
+			return false;
+		}
+
+		return $available;
+	}
+
+	/**
+	 * Block temporary users from authenticating via Application Password and enforce expiry across all channels.
+	 *
+	 * Hooked to `determine_current_user` at priority 30.
+	 *
+	 * @param int|false $user_id Resolved user ID, or false if not yet authenticated.
+	 *
+	 * @return int|false
+	 */
+	public function block_expired_temp_user_app_password_auth( $user_id ) {
+
+		if ( empty( $user_id ) ) {
+			return $user_id;
+		}
+
+		if ( Wp_Temporary_Login_Without_Password_Common::is_valid_temporary_login( (int) $user_id, false ) ) {
+
+			// Enforce expiry for all channels (including REST API endpoints like /wp/v2/users/me).
+			if ( Wp_Temporary_Login_Without_Password_Common::is_login_expired( (int) $user_id ) ) {
+
+				// Purge Application Passwords & destroy session tokens upon expiry.
+				Wp_Temporary_Login_Without_Password_Common::delete_user_application_passwords( (int) $user_id );
+				if ( class_exists( 'WP_Session_Tokens' ) ) {
+					$sessions = WP_Session_Tokens::get_instance( (int) $user_id );
+					$sessions->destroy_all();
+				}
+
+				return false;
+			}
+
+			// Reject any attempt to authenticate using HTTP Basic Auth (Application Passwords).
+			if ( isset( $_SERVER['PHP_AUTH_USER'] ) ) {
+				Wp_Temporary_Login_Without_Password_Common::delete_user_application_passwords( (int) $user_id );
+				return false;
+			}
+		}
+
+		return $user_id;
+	}
+
+	/**
+	 * Block temporary users from authenticating via Application Password on XML-RPC requests.
+	 *
+	 * Hooked to `authenticate` at priority 30, which runs after the core
+	 * WP_Application_Passwords::authenticate handler (priority 20). If the resolved
+	 * WP_User is a temporary user, a WP_Error is returned and any stored Application
+	 * Passwords are deleted.
+	 *
+	 * @param WP_User|WP_Error|null $user     Resolved user object, error, or null.
+	 * @param string                $username Supplied username.
+	 * @param string                $password Supplied password (may be an Application Password).
+	 *
+	 * @return WP_User|WP_Error|null
+	 */
+	public function block_expired_temp_user_xmlrpc_auth( $user, $username, $password ) {
+
+		if ( ! ( $user instanceof WP_User ) ) {
+			return $user;
+		}
+
+		// Same logic as REST: block all temporary users regardless of expiry.
+		if ( Wp_Temporary_Login_Without_Password_Common::is_valid_temporary_login( $user->ID, false ) ) {
+
+			// Purge stored Application Passwords.
+			Wp_Temporary_Login_Without_Password_Common::delete_user_application_passwords( $user->ID );
+
+			return new WP_Error(
+				'tlwp_auth_denied',
+				__( 'Application Passwords cannot be used with temporary logins.', 'temporary-login-without-password' )
+			);
 		}
 
 		return $user;

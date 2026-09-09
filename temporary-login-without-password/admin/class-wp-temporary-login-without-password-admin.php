@@ -595,9 +595,9 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 
 					$data = ! empty( $_POST['wtlwp_data'] ) ? self::sanitize_data( $_POST['wtlwp_data'] ) : array();
 
-					$user_id = ! empty( $data['user_id'] ) ? $data['user_id'] : 0;
+					$target_user_id = absint( $user_id );
 
-					$update = Wp_Temporary_Login_Without_Password_Common::update_user( $user_id, $data );
+					$update = Wp_Temporary_Login_Without_Password_Common::update_user( $target_user_id, $data );
 
 					if ( $update ) {
 						$result = array(
