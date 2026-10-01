@@ -114,30 +114,49 @@
 })(jQuery);
 
 jQuery(function ($) {
-$('#wtlwp-enable-one-click-login').on('click', function (e) {
-	e.preventDefault();
-	$.ajax({
-		url: data.admin_ajax_url,
-		type: 'POST',
-		data: {
-			action: 'wtlwp_enable_one_click_login',
-			nonce: data.nonce,
-			user_id: $(this).data('user-id'),
-			enable: 'enable'
-		},
-		success: function (response) {
-			if (response.success) {
-				$('#wtlwp-enable-one-click-login').hide();
-				$('.wtlwp-copy-to-clipboard').removeClass('hidden');
-				$('.wtlwp-copy-to-clipboard-text').removeClass('hidden');
-			} else {
-				console.log('Failed:', response.data.message);
+	$('#wtlwp-enable-one-click-login').on('click', function (e) {
+		e.preventDefault();
+		$.ajax({
+			url: data.admin_ajax_url,
+			type: 'POST',
+			data: {
+				action: 'wtlwp_enable_one_click_login',
+				nonce: data.nonce,
+				user_id: $(this).data('user-id'),
+				enable: 'enable'
+			},
+			success: function (response) {
+				if (response.success) {
+					$('#wtlwp-enable-one-click-login').hide();
+					$('.wtlwp-copy-to-clipboard').removeClass('hidden');
+					$('.wtlwp-copy-to-clipboard-text').removeClass('hidden');
+				} else {
+					console.log('Failed:', response.data.message);
+				}
+			},
+			error: function (err) {
+				console.log('AJAX error:', err);
 			}
-		},
-		error: function (err) {
-			console.log('AJAX error:', err);
-		}
+		});
 	});
-});
+
+
+	$('#wtlwp-max-login-upsale').on('click', function (e) {
+		$.ajax({
+			url: data.admin_ajax_url,
+			type: 'POST',
+			data: {
+				action: 'wtlwp_save_upsell_flow',
+				nonce: data.nonce,
+				flow: 'max-login-field',
+			},
+			success: function (response) {
+				console.log('Success:', response.data.message);
+			},
+			error: function (err) {
+				console.log('AJAX error:', err);
+			}
+		});
+	});
 
 });

@@ -1,3 +1,6 @@
+<?php
+$utm_campaign = get_option('wtlwp_upsell_flow') == 'max-login-field' ? 'max-login' : 'pricing-page';
+?>
 <div class="bg-white rounded-lg shadow-md pt-2 pb-10">
     <div class="container w-full mt-4 mb-7">
         <div class="mt-12 text-center">
@@ -9,7 +12,7 @@
             <div class="grid items-center grid-cols-3 gap-8 mx-auto">
                 <h2 class="sm:col-span-2 lg:col-span-2 text-4xl leading-10 font-semibold"><?php echo esc_html__( 'Work with experts outside the team with zero fear of data breach.', 'temporary-login-without-password');?></h2>
                 <div class="space-y-3 text-center">
-                    <a href="<?php echo esc_url('https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1&utm_source=in-app&utm_medium=tlwp&utm_campaign=pricing-page');?>" class="text-lg button primary text-2xl arrow_nxt" target="_blank">
+                    <a href="<?php echo esc_url('https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1&utm_source=in-app&utm_medium=tlwp&utm_campaign=' . esc_attr( $utm_campaign ) . '');?>" class="text-lg button primary text-2xl arrow_nxt" target="_blank">
                         <?php echo esc_html__( 'Get TLWP Pro', 'temporary-login-without-password');?>
                     </a>
                     <a href="<?php echo esc_url('https://www.icegram.com/contact/');?>" class="inline-block text-base link arrow_nxt" target="_blank">
@@ -64,7 +67,7 @@
                     <del><p class="text-grey-600"><?php echo esc_html__( '$49/year', 'temporary-login-without-password' );?></p></del>
                     <span class="text-4xl font-extrabold leading-10 text-gray-900"><?php echo esc_html__( '$39.20', 'temporary-login-without-password' );?></span>
                     <span class="text-base font-medium leading-6 text-gray-500"><?php echo esc_html__( '/year', 'temporary-login-without-password' );?></span></div><div class="space-y-3 mt-8 text-center">
-                    <a href="<?php echo esc_url('https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1&utm_source=in-app&utm_medium=tlwp&utm_campaign=pricing-page');?>" class="sm:text-xl button primary text-2xl arrow_nxt" target="_blank">
+                    <a href="<?php echo esc_url('https://www.icegram.com/?buy-now=445245&qty=1&coupon=tlwp-pro-20&with-cart=1&utm_source=in-app&utm_medium=tlwp&utm_campaign=' . esc_attr( $utm_campaign ) . '');?>" class="sm:text-xl button primary text-2xl arrow_nxt" target="_blank">
                         <?php echo esc_html__( 'Get TLWP Pro', 'temporary-login-without-password' );?>
                     </a>
                     <p class="text-sm"><i>(<?php echo esc_html__( 'Limited time offer –', 'temporary-login-without-password' );?> <strong><?php echo esc_html__( '20% off', 'temporary-login-without-password' );?></strong>)</i></p>

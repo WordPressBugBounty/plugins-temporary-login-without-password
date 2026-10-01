@@ -155,9 +155,11 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 			$this->loader->add_action( 'admin_init', $plugin_admin, 'maybe_create_one_click_user' );
 			$this->loader->add_action( 'admin_init', $plugin_admin, 'update_tlwp_settings' );
 			$this->loader->add_action( 'admin_init', $plugin_admin, 'manage_temporary_login' );
+			$this->loader->add_action( 'admin_init', $plugin_admin, 'prevent_tlwp_deactivation' );
 			$this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_display_admin_notices' );
-			$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'tlwp_show_temporary_access_notice_in_admin_bar', 999 );
-			$this->loader->add_action( 'admin_head', $plugin_admin, 'tlwp_test_mode_notice_admin_bar_css', 999 );
+			$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'tlwp_show_temporary_access_notice_in_admin_bar', 999 );			
+			$this->loader->add_action( 'admin_head', $plugin_admin, 'disable_tlwp_bulk_action_assets' );
+			$this->loader->add_action( 'admin_head', $plugin_admin, 'temporary_user_adminbar_styles', 999 );
 			// $this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_show_promotion_notice', 999 );
 			// $this->loader->add_action( 'wp_ajax_tlwp_dismiss_promo_custom_notice', $plugin_admin, 'tlwp_dismiss_promo_custom_notice', 999 );
 
@@ -166,8 +168,13 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 			$this->loader->add_action( 'wp_ajax_tlwp_mailer_notice_clickable', $plugin_admin, 'mailer_notice_clickable' );
 
 			$this->loader->add_filter( 'wpmu_welcome_notification', $plugin_admin, 'disable_welcome_notification', 10, 5 );
-			$this->loader->add_filter( 'plugin_action_links', $plugin_admin, 'disable_plugin_deactivation', 10, 4 );
+			$this->loader->add_filter( 'plugin_action_links', $plugin_admin, 'disable_plugin_deactivation', 99, 4 );
 			$this->loader->add_filter( 'plugin_action_links_' . WTLWP_PLUGIN_BASE_NAME, $plugin_admin, 'plugin_add_settings_link', 10, 4 );
+			$this->loader->add_filter( 'plugin_action_links_' . WTLWP_PLUGIN_BASE_NAME, $plugin_admin, 'filter_tlwp_specific_plugin_action_links', 999, 1 );
+			$this->loader->add_filter( 'plugin_row_meta', $plugin_admin, 'filter_tlwp_plugin_row_meta', 99, 4 );
+			$this->loader->add_filter( 'plugin_auto_update_setting_html', $plugin_admin, 'filter_tlwp_auto_update_setting_html', 99, 3 );
+			$this->loader->add_action( 'wp_ajax_wtlwp_disconnect_icegram', $plugin_admin, 'block_tlwp_disconnect_for_temporary_user', 1 );
+			$this->loader->add_action( 'wp_ajax_tlwp_disconnect_icegram', $plugin_admin, 'block_tlwp_disconnect_for_temporary_user', 1 );
 
 			$this->loader->add_action( 'admin_print_scripts', $plugin_admin, 'remove_admin_notices' );
 

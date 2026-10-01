@@ -90,17 +90,39 @@
 			</td>
 		</tr>
 		<?php if ( Wp_Temporary_Login_Without_Password::is_pro() ) { ?>
-		<tr class="form-field">
-			<th scope="row" class="wtlwp-form-row">
-				<label for="max-login-limit"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Max Login Limit', 'temporary-login-without-password' ); ?></span></label>
-			</th>
-			<td>
-				<span id="max-login-limit">
-				 <input type="number" name="wtlwp_data[max_login_limit]" value="<?php echo esc_attr($temporary_user_data['max_login_limit'] ); ?>" class="wtlwp-form-input form-input text-center" min="0"/>					
-				</span>
-			</td>
-		 </tr>
-		<?php } ?>
+			<tr class="form-field">
+				<th scope="row" class="wtlwp-form-row">
+					<label for="max-login-limit"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Max Login Limit', 'temporary-login-without-password' ); ?></span></label>
+				</th>
+				<td>
+					<span id="max-login-limit">
+					<input type="number" name="wtlwp_data[max_login_limit]" value="<?php echo esc_attr($temporary_user_data['max_login_limit'] ); ?>" class="wtlwp-form-input form-input text-center" min="0"/>					
+					</span>
+				</td>
+			</tr>
+			<?php 
+		} else { ?>
+			<tr class="form-field">
+				<th scope="row" class="wtlwp-form-row">
+					<label for="max-login-limit"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Max Login Limit', 'temporary-login-without-password' ); ?></span></label>
+				</th>
+				<td>
+					<a href="<?php echo admin_url( 'users.php?page=wp-temporary-login-without-password&tab=tlwp-pricing' );?>" id="wtlwp-max-login-upsale">
+						<div style="display: flex; cursor: pointer">
+							<input 
+							type="number" 
+							value="10"
+							class="wtlwp-form-input form-input" min="0"
+							style="color: transparent; text-shadow: 0 0 3px rgba(0,0,0,0.8); transition: all 0.2s; cursor: pointer; pointer-events: none; width: auto !important;" 
+							readonly 
+							/>
+							<img src="<?php echo WTLWP_PLUGIN_URL . 'admin/assets/images/crown-icon.svg'; ?>" style="width: 18px; height: 18px; margin: 10px;">
+						</div>
+					</a>
+				</td>
+			</tr>
+			<?php 
+		}?>
 		<tr class="form-field">
 			<th scope="row" class="wtlwp-form-row">
 				<label for="language"><?php echo esc_html__( 'Language', 'temporary-login-without-password' ); ?></label>

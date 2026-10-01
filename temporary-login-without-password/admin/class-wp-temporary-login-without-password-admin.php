@@ -45,8 +45,18 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			$this->plugin_name = $plugin_name;
 			$this->version     = $version;
 
-			add_action( 'wp_ajax_wtlwp_enable_one_click_login', array( $this, 'handle_enable_one_click_login' ));
+			add_action( 'wp_ajax_wtlwp_enable_one_click_login', array( $this, 'handle_enable_one_click_login' )); 
+
+			// Hook CSS for frontend 
+			add_action( 'wp_head', array( $this, 'temporary_user_adminbar_styles' ), 999 );
+			
+			// Hook JavaScript for both frontend and admin
+			add_action( 'admin_footer', array( $this, 'temporary_user_adminbar_script' ), 999 );
+
+			add_action( 'wp_footer', array( $this, 'temporary_user_adminbar_script' ), 999 );
+			
 			//add_action( 'init', array( $this, 'generate_tlwp_temporary_login_link' ) ); //testing only
+			add_action( 'wp_ajax_wtlwp_save_upsell_flow', array( $this, 'save_upsell_flow' ));
 		}
 
 		/**
@@ -121,8 +131,12 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			if ( ! wp_script_is( 'tlwp-common', 'enqueued' ) ) {
 				wp_enqueue_script( 'tlwp-common', plugin_dir_url( __FILE__ ) . 'js/common.js', array( 'jquery' ), WTLWP_PLUGIN_VERSION, false );
 
+				list( $plugin_base_name ) = Wp_Temporary_Login_Without_Password_Common::get_plugin_base_names();
+
 				$data = array(
-				'is_temporary_login' => $is_temporary_login
+					'is_temporary_login' => $is_temporary_login,
+					'plugin_base_name'   => $plugin_base_name,
+					'plugin_slug'        => 'temporary-login-without-password',
 				);
 
 				wp_localize_script( 'tlwp-common', 'tempData', $data );
@@ -443,6 +457,10 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 		 * @since 1.4.6
 		 */
 		public function update_tlwp_settings() {
+
+			if ( Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return;
+			}
 
 			if ( empty( $_POST['tlwp_settings_data'] ) || empty( $_POST['wtlwp-settings-nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wtlwp-settings-nonce'] ) ), 'wtlwp_login_settings' ) || ! current_user_can( 'manage_options' ) ) {
 				return;
@@ -902,12 +920,242 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 		 */
 		public function disable_plugin_deactivation( $actions, $plugin_file, $plugin_data, $context ) {
 
-			$current_user_id = get_current_user_id();
-			if ( Wp_Temporary_Login_Without_Password_Common::is_valid_temporary_login( $current_user_id ) && ( 'temporary-login-without-password/temporary-login-without-password.php' === $plugin_file ) ) {
-				unset( $actions['deactivate'] );
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return $actions;
+			}
+
+			list( $plugin_base_name, $default_base_name ) = Wp_Temporary_Login_Without_Password_Common::get_plugin_base_names();
+
+			if ( $default_base_name === $plugin_file || $plugin_base_name === $plugin_file ) {
+				// Remove actions by known stable keys.
+				$restricted_keys = array( 'deactivate', 'settings');
+				foreach ( $restricted_keys as $key ) {
+					unset( $actions[ $key ] );
+				}
+
+				// Remove remaining actions by stable URL/attribute patterns (not display text).
+				$restricted_patterns = array(
+					'_action=request_data',
+					'connect_icegram',
+					'disconnect_icegram',
+					'tab=settings',
+				);
+
+				foreach ( $actions as $key => $action_link ) {
+					foreach ( $restricted_patterns as $pattern ) {
+						if ( false !== stripos( $action_link, $pattern ) ) {
+							unset( $actions[ $key ] );
+							break;
+						}
+					}
+				}
 			}
 
 			return $actions;
+		}
+
+		/**
+		 * Prevent deactivating TLWP plugin and restricted actions by temporary login users via bulk action or direct URL.
+		 *
+		 * @since 1.8.4
+		 */
+		public function prevent_tlwp_deactivation() {
+
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return;
+			}
+
+			list( $plugin_base_name, $default_base_name ) = Wp_Temporary_Login_Without_Password_Common::get_plugin_base_names();
+
+			// Exclude TLWP from bulk actions (deactivate, enable auto updates, disable auto updates)
+			if ( isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$checked_plugins = map_deep( wp_unslash( $_POST['checked'] ), 'sanitize_text_field' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+				$checked_plugins = array_values(
+					array_filter(
+						$checked_plugins,
+						function( $plugin ) use ( $plugin_base_name, $default_base_name ) {
+							return ( $plugin !== $plugin_base_name && $plugin !== $default_base_name );
+						}
+					)
+				);
+
+				$_POST['checked'] = $checked_plugins; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				if ( isset( $_REQUEST['checked'] ) && is_array( $_REQUEST['checked'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$_REQUEST['checked'] = $checked_plugins; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				}
+			}
+
+			// Block direct single actions via URL (deactivate, enable-auto-update, disable-auto-update)
+			if ( isset( $_GET['action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$action = sanitize_text_field( wp_unslash( $_GET['action'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$restricted_actions = array( 'deactivate', 'enable-auto-update', 'disable-auto-update' );
+				if ( in_array( $action, $restricted_actions, true ) ) {
+					$plugin = isset( $_GET['plugin'] ) ? sanitize_text_field( wp_unslash( $_GET['plugin'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					if ( $plugin_base_name === $plugin || $default_base_name === $plugin ) {
+						wp_die( esc_html__( 'Temporary users are not allowed to perform this action.', 'temporary-login-without-password' ) );
+					}
+				}
+			}
+
+			// Block Check for updates request by temporary user
+			$wtlwp_action = isset( $_GET['wtlwp_action'] ) ? sanitize_text_field( wp_unslash( $_GET['wtlwp_action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$get_action   = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( 'request_data' === $wtlwp_action || 'request_data' === $get_action ) {
+				wp_die( esc_html__( 'Temporary users are not allowed to check for updates.', 'temporary-login-without-password' ) );
+			}
+
+			// Block temporary user accessing Settings tab directly
+			global $pagenow;
+			$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$tab  = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( 'users.php' === $pagenow && 'wp-temporary-login-without-password' === $page && 'settings' === $tab ) {
+				wp_safe_redirect( admin_url( 'users.php?page=wp-temporary-login-without-password' ) );
+				exit();
+			}
+
+		}
+
+		/**
+		 * Style TLWP checkbox as disabled and grayed-out, and hide auto-updates column in plugins list for temporary login users.
+		 *
+		 * @since 1.8.4
+		 */
+		public function disable_tlwp_bulk_action_assets() {
+
+			global $pagenow;
+			if ( ! in_array( $pagenow, array( 'plugins.php', 'plugins-network.php' ), true ) ) {
+				return;
+			}
+
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return;
+			}
+			?>
+			<style type="text/css">
+				input[value*="temporary-login-without-password"],
+				input[value*="temporary-login"],
+				tr[data-slug*="temporary-login"] th.check-column input[type="checkbox"],
+				tr[data-plugin*="temporary-login"] th.check-column input[type="checkbox"],
+				tr:has(input[value*="temporary-login"]) th.check-column input[type="checkbox"] {
+					opacity: 0.4 !important;
+					cursor: not-allowed !important;
+					pointer-events: none !important;
+					filter: grayscale(100%) !important;
+				}
+				tr[data-slug*="temporary-login"] th.check-column,
+				tr[data-plugin*="temporary-login"] th.check-column,
+				tr:has(input[value*="temporary-login"]) th.check-column,
+				tr[data-slug*="temporary-login"] th.check-column label,
+				tr[data-plugin*="temporary-login"] th.check-column label,
+				tr:has(input[value*="temporary-login"]) th.check-column label {
+					cursor: not-allowed !important;
+					pointer-events: none !important;
+				}
+				tr[data-slug*="temporary-login"] td.column-auto-updates *,
+				tr[data-plugin*="temporary-login"] td.column-auto-updates *,
+				tr:has(input[value*="temporary-login"]) td.column-auto-updates * {
+					display: none !important;
+					pointer-events: none !important;
+				}
+			</style>
+			<script type="text/javascript">
+				(function($) {
+					if (typeof $ === 'undefined') return;
+					function lockTLWPCheckbox() {
+						var $checkboxes = $('input[value*="temporary-login-without-password"], input[value*="temporary-login"], tr[data-slug*="temporary-login"] th.check-column input, tr[data-plugin*="temporary-login"] th.check-column input');
+						$checkboxes.each(function() {
+							$(this).prop('checked', false).prop('disabled', true).attr('disabled', 'disabled').removeAttr('checked');
+						});
+					}
+					$(document).ready(lockTLWPCheckbox);
+					lockTLWPCheckbox();
+					$(window).on('load', lockTLWPCheckbox);
+					$(document).on('click change', 'th.check-column :checkbox, #cb-select-all-1, #cb-select-all-2, table', function() {
+						setTimeout(lockTLWPCheckbox, 0);
+					});
+				})(jQuery);
+			</script>
+			<?php
+
+		}
+
+		/**
+		 * Filter TLWP row meta links for temporary login users.
+		 *
+		 * @param array  $plugin_meta
+		 * @param string $plugin_file
+		 * @param array  $plugin_data
+		 * @param string $status
+		 *
+		 * @return array
+		 * @since 1.8.4
+		 */
+		public function filter_tlwp_plugin_row_meta( $plugin_meta, $plugin_file, $plugin_data, $status ) {
+
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return $plugin_meta;
+			}
+
+			list( $plugin_base_name, $default_base_name ) = Wp_Temporary_Login_Without_Password_Common::get_plugin_base_names();
+
+			if ( $plugin_file === $plugin_base_name || $plugin_file === $default_base_name ) {
+				$restricted_patterns = array(
+					'disconnect_icegram',
+					'connect_icegram',
+				);
+
+				foreach ( $plugin_meta as $key => $meta_link ) {
+					foreach ( $restricted_patterns as $pattern ) {
+						if ( false !== stripos( $meta_link, $pattern ) ) {
+							unset( $plugin_meta[ $key ] );
+							break;
+						}
+					}
+				}
+			}
+
+			return $plugin_meta;
+
+		}
+
+		/**
+		 * Filter TLWP auto update setting HTML for temporary login users.
+		 *
+		 * @param string $html
+		 * @param string $plugin_file
+		 * @param array  $plugin_data
+		 *
+		 * @return string
+		 * @since 1.8.4
+		 */
+		public function filter_tlwp_auto_update_setting_html( $html, $plugin_file, $plugin_data ) {
+
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return $html;
+			}
+
+			list( $plugin_base_name, $default_base_name ) = Wp_Temporary_Login_Without_Password_Common::get_plugin_base_names();
+
+			if ( $plugin_file === $plugin_base_name || $plugin_file === $default_base_name ) {
+				return '';
+			}
+
+			return $html;
+
+		}
+
+		/**
+		 * Block disconnect Icegram ajax action for temporary login users.
+		 *
+		 * @since 1.8.4
+		 */
+		public function block_tlwp_disconnect_for_temporary_user() {
+
+			if ( Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				wp_send_json_error( array( 'message' => esc_html__( 'Permission denied.', 'temporary-login-without-password' ) ) );
+			}
+
 		}
 
 		/**
@@ -921,10 +1169,103 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 		 */
 		public function plugin_add_settings_link( $links ) {
 
+			if ( Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return $links;
+			}
+
 			$settings_link = '<a href="users.php?page=wp-temporary-login-without-password&tab=settings">' . __( 'Settings' ) . '</a>';
 			$links[]       = $settings_link;
 
 			return $links;
+		}
+
+		/**
+		 * Filter TLWP specific action links at highest priority for temporary login users.
+		 *
+		 * @param array $links
+		 *
+		 * @return array
+		 * @since 1.8.4
+		 */
+		public function filter_tlwp_specific_plugin_action_links( $links ) {
+
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return $links;
+			}
+
+			// Remove actions by known stable keys.
+			$restricted_keys = array( 'deactivate', 'settings', 'edit' );
+			foreach ( $restricted_keys as $key ) {
+				unset( $links[ $key ] );
+			}
+
+			// Remove remaining actions by stable URL/attribute patterns (not display text).
+			$restricted_patterns = array(
+				'_action=request_data',
+				'connect_icegram',
+				'disconnect_icegram',
+				'tab=settings',
+			);
+
+			foreach ( (array) $links as $key => $action_link ) {
+				foreach ( $restricted_patterns as $pattern ) {
+					if ( false !== stripos( $action_link, $pattern ) ) {
+						unset( $links[ $key ] );
+						break;
+					}
+				}
+			}
+
+			return array_values( $links );
+
+		}
+
+		/*
+		 * Get short time format for admin bar
+		 *
+		 * @param int $expire_timestamp
+		 * @return string
+		 * @since 1.0
+		 */
+		private function get_short_expiry_time( $expire_timestamp ) {
+
+			$expired_text = __( 'Expired', 'temporary-login-without-password' );
+    
+			if ( empty( $expire_timestamp ) || ! is_numeric( $expire_timestamp ) ) {
+				return $expired_text;
+			}
+
+			$current_time = Wp_Temporary_Login_Without_Password_Common::get_current_gmt_timestamp();
+			$time_diff =  (int) ( $expire_timestamp - $current_time );
+
+			if ( $time_diff <= 0 ) {
+				return $expired_text;
+			}
+
+			$days = floor( $time_diff / DAY_IN_SECONDS );
+			$hours = floor( ( $time_diff % DAY_IN_SECONDS ) / HOUR_IN_SECONDS );
+			$minutes = floor( ( $time_diff % HOUR_IN_SECONDS ) / MINUTE_IN_SECONDS );
+			$seconds = $time_diff % MINUTE_IN_SECONDS;
+ 
+			$parts = array();
+
+			if ( $days > 0 ) {
+				$parts[] = sprintf( '%dd', $days );
+			}
+			
+			if ( $hours > 0 ) {
+				$parts[] = sprintf( '%dh', $hours );
+			}
+			
+			if ( $minutes > 0 ) {
+				$parts[] = sprintf( '%dm', $minutes );
+			}
+			
+			if ( $seconds > 0 || empty( $parts ) ) {
+				$parts[] = sprintf( '%ds', $seconds );
+			}
+
+			return implode( ' ', $parts );
 		}
 
 		/**
@@ -941,15 +1282,61 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			$is_valid_temporary_user = Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user();
 
 			if ( $is_valid_temporary_user ) {
-				// Add the main site admin menu item.
+
+				$user_id = get_current_user_id();
+				
+				$expire = get_user_meta( $user_id, '_wtlwp_expire', true );
+
+				$expire = ! empty( $expire ) && is_numeric( $expire ) ? absint( $expire ) : 0;
+
+				if ( empty( $expire ) ) {
+					return true;
+				}
+
+				$expiry_text = $this->get_short_expiry_time( $expire );
+
+				// Format the expiry date/time for tooltip
+				$expiry_date_formatted = '';
+				
+				// Use wp_date() for proper timezone conversion (WP 5.3+)
+				if ( function_exists( 'wp_date' ) ) {
+					$expiry_date_formatted = wp_date( 
+						get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), 
+						$expire 
+					);
+				} else {
+					// for older WordPress versions - convert GMT timestamp to local time
+					$local_timestamp = $expire + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+					$expiry_date_formatted = date_i18n( 
+						get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), 
+						$local_timestamp 
+					);
+				}
+				  
+				// Create tooltip message
+				$tooltip_message = ! empty( $expiry_date_formatted ) 
+					? sprintf( __( 'Access expires on: %s', 'temporary-login-without-password' ), $expiry_date_formatted )
+					: __( 'Temporary Access', 'temporary-login-without-password' );
+
+					
+				// lable and timer
+        		$expiry_timer_html = '<span class="tlwp-access-wrapper" title="' . esc_attr( $tooltip_message ) . '">' .
+					'<span class="tlwp-label-dark">' . __( 'Temporary Access: ', 'temporary-login-without-password' ) . '</span>' . 
+					'<span class="tlwp-timer-wrapper" data-expire="' . esc_attr( $expire ) . '">' .
+						'<span class="dashicons dashicons-clock tlwp-clock-icon"></span>' . 
+						'<span class="tlwp-expiry-time">' . esc_html( $expiry_text ) . '</span>' .
+					'</span>' .
+				'</span>';
+
+				// Add "Temporary Access" on the RIGHT side
 				$wp_admin_bar->add_menu(
-				array(
-					'id'     => 'temporay-access-notice',
-					'href'   => admin_url( 'users.php?page=wp-temporary-login-without-password' ),
-					'parent' => 'top-secondary',
-					'title'  => __( 'Temporary Access', 'temporary-login-without-password' ),
-					'meta'   => array( 'class' => 'temporay-access-mode-active' ),
-				)
+					array(
+						'id'     => 'temporay-access-notice',
+						'href'   => admin_url( 'users.php?page=wp-temporary-login-without-password' ),
+						'parent' => 'top-secondary', // This keeps it on the right side
+						'title'  => $expiry_timer_html,
+						'meta'   => array( 'class' => 'temporay-access-mode-active' ),
+					)
 				);
 			}
 
@@ -961,23 +1348,136 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 		 *
 		 * @since 1.6.2
 		 */
-		public function tlwp_test_mode_notice_admin_bar_css() {
+		public function temporary_user_adminbar_styles() {
 			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
 				return;
 			}
 
 			?>
-		<style>
-			#wpadminbar .temporay-access-mode-active > .ab-item {
-				color: #fff;
-				background-color: #ffba00;
+			<style>
+				#wpadminbar .temporay-access-mode-active > .ab-item {
+					color: #fff !important;
+					background-color: #2c3338 !important;
+					padding: 0 !important;
+					display: flex !important;
+					align-items: center !important;
+					line-height: 32px !important;
+				}
+ 
+				#wpadminbar .temporay-access-mode-active > .ab-item .tlwp-access-wrapper {
+					display: flex !important;
+					align-items: center !important;
+					width: 100% !important;
+				}
+
+				#wpadminbar .temporay-access-mode-active > .ab-item .tlwp-label-dark {
+					padding-left: 12px !important;
+					display: inline-block !important;
+					height: 32px !important;
+					line-height: 32px !important;
+				}
+
+				#wpadminbar .temporay-access-mode-active > .ab-item .tlwp-timer-wrapper {
+					display: inline-flex !important;
+					align-items: center !important;
+					margin-right: 12px !important;
+					color: #ffba00;
+				}
+
+				#wpadminbar .temporay-access-mode-active > .ab-item .dashicons.tlwp-clock-icon {
+					font-size: 20px !important;
+					width: 16px !important;
+					height: 16px !important;
+					line-height: 18px !important;
+					margin: 0 8px !important;
+					display: inline-block !important;
+					vertical-align: middle !important;
+					font-family: dashicons !important;
+				}
+
+				#wpadminbar .temporay-access-mode-active > .ab-item .dashicons.tlwp-clock-icon:before {
+					font-size: 18px !important; 
+				}
+
+				#wpadminbar .temporay-access-mode-active > .ab-item .tlwp-expiry-time {
+					font-weight: normal !important;
+					display: inline-block !important;
+					font-size: 13px !important;
+				}
+
+				#wpadminbar .temporay-access-mode-active:hover > .ab-item {
+					background-color: #363f47 !important;
+					color: #fff !important;
+				}
+			</style>			 
+			<?php
+		}
+		 
+		/**
+		 * Add temporary access bar javascript
+		 *
+		 * @since 1.6.2
+		 */
+		public function temporary_user_adminbar_script() {
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+				return;
 			}
 
-			#wpadminbar .temporay-access-mode-active:hover > .ab-item, #wpadminbar .temporay-access-mode-active:hover > .ab-item {
-				background-color: rgba(203, 144, 0, 1) !important;
-				color: #fff !important;
-			}
-		</style>
+			?>
+			<script type="text/javascript">
+				(function() {
+
+				const DAY = 86400;
+				const HOUR = 3600;
+				const MINUTE = 60;
+				const EXPIRED_COLOR = '#ef4444';
+				const WARNING_COLOR = '#ef4444';
+				const NORMAL_COLOR = '#ffba00';
+				const EXPIRED_TEXT = '<?php echo esc_js( __( 'Expired', 'temporary-login-without-password' ) ); ?>'; 
+				var countdownInterval;
+
+				var timerWrapper = document.querySelector('.tlwp-timer-wrapper');
+				if (!timerWrapper) return;
+				
+				var expiryElement = timerWrapper.querySelector('.tlwp-expiry-time');
+				if (!expiryElement) return;
+				
+				var expireTimestamp = parseInt(timerWrapper.getAttribute('data-expire'));
+				if (!expireTimestamp) return;
+				
+				var countdownInterval;
+				
+				function updateCountdown() {
+					var currentTime = Math.floor(Date.now() / 1000);
+					var timeDiff = expireTimestamp - currentTime;
+					
+					if (timeDiff <= 0) {
+						expiryElement.textContent = EXPIRED_TEXT;
+						timerWrapper.style.color = EXPIRED_COLOR;
+						clearInterval(countdownInterval); 
+						return;
+					}
+					
+					timerWrapper.style.color = (timeDiff < HOUR) ? WARNING_COLOR : NORMAL_COLOR;
+					
+					var days = Math.floor(timeDiff / DAY);
+					var hours = Math.floor((timeDiff % DAY) / HOUR);
+					var minutes = Math.floor((timeDiff % HOUR) / MINUTE);
+					var seconds = timeDiff % MINUTE;
+ 
+					var parts = [];
+					if (days > 0) parts.push(days + 'd');
+					if (hours > 0) parts.push(hours + 'h');
+					if (minutes > 0) parts.push(minutes + 'm');
+					if (seconds > 0 || parts.length === 0) parts.push(seconds + 's');
+					
+					expiryElement.textContent = parts.join(' ');
+				}
+
+				updateCountdown();
+				countdownInterval = setInterval(updateCountdown, 1000);
+			})();
+			</script>
 			<?php
 		}
 
@@ -1132,6 +1632,27 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 				array( 'message' => esc_html__( 'Failed to complete action.', 'temporary-login-without-password' ) )
 			);
 			
+		}
+
+		public function save_upsell_flow() {
+			check_ajax_referer( 'wtlwp_nonce', 'nonce' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(
+					array( 'message' => esc_html__( 'Permission denied.', 'temporary-login-without-password' ) )
+				);
+			}
+
+			$flow = isset( $_POST['flow'] ) ? sanitize_text_field( wp_unslash( $_POST['flow'] ) ) : '';
+
+			if ( 'max-login-field' === $flow ) {
+				update_option( 'wtlwp_upsell_flow', $flow, false );
+				wp_send_json_success();
+			}
+
+			wp_send_json_error(
+				array( 'message' => esc_html__( 'Failed to complete action.', 'temporary-login-without-password' ) )
+			);
 		}
 
 	}
