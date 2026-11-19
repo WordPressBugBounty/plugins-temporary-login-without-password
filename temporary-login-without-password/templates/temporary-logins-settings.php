@@ -5,6 +5,10 @@
  * @package Temporary Login Without Password
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 ?>
 <?php /*
 <h2 class="font-semibold text-gray-700"> <?php echo esc_html__( 'Temporary Login Settings', 'temporary-login-without-password' ); ?></h2>

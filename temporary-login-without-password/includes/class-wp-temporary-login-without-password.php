@@ -160,8 +160,8 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 			$this->loader->add_action( 'admin_bar_menu', $plugin_admin, 'tlwp_show_temporary_access_notice_in_admin_bar', 999 );			
 			$this->loader->add_action( 'admin_head', $plugin_admin, 'disable_tlwp_bulk_action_assets' );
 			$this->loader->add_action( 'admin_head', $plugin_admin, 'temporary_user_adminbar_styles', 999 );
-			// $this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_show_promotion_notice', 999 );
-			// $this->loader->add_action( 'wp_ajax_tlwp_dismiss_promo_custom_notice', $plugin_admin, 'tlwp_dismiss_promo_custom_notice', 999 );
+			$this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_show_promotion_notice', 999 );
+			$this->loader->add_action( 'wp_ajax_tlwp_dismiss_promo_custom_notice', $plugin_admin, 'tlwp_dismiss_promo_custom_notice', 999 );
 
 			$this->loader->add_action( 'admin_notices', $plugin_admin, 'show_tlwp_mailer_promotion_notice', 999 );
 			$this->loader->add_action( 'wp_ajax_tlwp_dismiss_mailer_promotion_notice', $plugin_admin, 'dismiss_tlwp_mailer_promotion_notice', 999 );
@@ -184,6 +184,12 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 
 			$this->loader->add_action( 'wp_loaded', $plugin_admin, 'wtlwp_may_be_show_sa_in_app_offer' );
 
+			// Dismiss and redirect handler on admin_init
+			$this->loader->add_action( 'admin_init', $plugin_admin, 'dismiss_admin_notice' );
+			
+			// Display offer notice on admin_notices
+			$this->loader->add_action( 'admin_notices', $plugin_admin, 'tlwp_show_offer_notice', 999 );
+
 		}
 
 		/**
@@ -198,6 +204,8 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password' ) ) {
 			$this->loader->add_action( 'init', $plugin_public, 'init_wtlwp' );
 			$this->loader->add_filter( 'wp_authenticate_user', $plugin_public, 'disable_temporary_user_login', 10, 2 );
 			$this->loader->add_filter( 'allow_password_reset', $plugin_public, 'disable_password_reset', 10, 2 );
+			$this->loader->add_filter( 'rest_pre_dispatch', $plugin_public, 'restrict_temporary_user_rest_api', 10, 3 );
+			$this->loader->add_action( 'admin_init', $plugin_public, 'restrict_temporary_user_ajax_actions', 1 );
 		}
 
 		/**

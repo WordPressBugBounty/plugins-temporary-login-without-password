@@ -1,0 +1,153 @@
+body.tlwp-ip-restriction {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.tlwp-restriction-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+.tlwp-restriction-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    background: #f0f0f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tlwp-restriction-icon svg {
+    width: 40px;
+    height: 40px;
+    fill: #999;
+}
+
+.tlwp-restriction-container h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.tlwp-restriction-message {
+    font-size: 16px;
+    color: #5a6c7d;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.tlwp-ip-box {
+    background: #f8f9fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.tlwp-ip-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.tlwp-ip-address {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: "Courier New", monospace;
+}
+
+.tlwp-help-text {
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.tlwp-restriction-footer {
+    font-size: 13px;
+    color: #9ca3af;
+    background: #f8f9fa;
+    padding: 20px;
+    margin: 30px -40px -40px;
+    border-top: 1px solid #e1e4e8;
+    border-radius: 0 0 12px 12px;
+}
+
+.tlwp-ip-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.tlwp-ip-address {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: "Courier New", monospace;
+}
+
+.tlwp-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;  
+    border: none;
+    color: #667eea;  
+    cursor: pointer; 
+    background: transparent;
+}
+
+.tlwp-copy-btn:hover { 
+    border-color: #667eea;
+    color: #5568d3;
+}
+
+.tlwp-copy-btn:active {
+    transform: scale(0.95);
+}
+
+.tlwp-copy-btn.copied {  
+    color: #10b981;
+}
+
+.tlwp-copy-btn svg {
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+    .tlwp-ip-wrapper {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .tlwp-restriction-container {
+        padding: 40px 25px;
+    }
+    
+    .tlwp-restriction-container h1 {
+        font-size: 24px;
+    }
+    
+    .tlwp-ip-address {
+        font-size: 18px;
+    }
+}

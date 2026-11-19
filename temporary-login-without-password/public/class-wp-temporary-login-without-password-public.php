@@ -5,6 +5,10 @@
  * @package Temporary Login Without Password
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Class Wp_Temporary_Login_Without_Password_Public
  *
@@ -151,6 +155,7 @@ class Wp_Temporary_Login_Without_Password_Public {
 
 			$user_id = get_current_user_id();
 			if ( ! empty( $user_id ) && Wp_Temporary_Login_Without_Password_Common::is_valid_temporary_login( $user_id, false ) ) {
+				
 				if ( Wp_Temporary_Login_Without_Password_Common::is_login_expired( $user_id ) ) {
 
 					// Security (Layer 2 – natural expiry): delete Application Passwords so
@@ -166,7 +171,24 @@ class Wp_Temporary_Login_Without_Password_Public {
 					$bloked_pages = Wp_Temporary_Login_Without_Password_Common::get_blocked_pages();
 					$page         = ! empty( $_GET['page'] ) ? $_GET['page'] : ''; //phpcs:ignore
 
-					if ( ! empty( $page ) && in_array( $page, $bloked_pages ) || ( ! empty( $pagenow ) && ( in_array( $pagenow, $bloked_pages ) ) ) || ( ! empty( $pagenow ) && ( 'users.php' === $pagenow && isset( $_GET['action'] ) && ( 'deleteuser' === $_GET['action'] || 'delete' === $_GET['action'] ) ) ) ) { //phpcs:ignore
+					// 1. Direct page access check (e.g. visiting user-new.php, user-edit.php, profile.php).
+					$is_blocked = ( ! empty( $page ) && in_array( $page, $bloked_pages, true ) ) || ( ! empty( $pagenow ) && in_array( $pagenow, $bloked_pages, true ) );
+					
+					// 2. Action check on users.php (Single Site and Multisite Network Admin).
+					if ( ! $is_blocked && ! empty( $pagenow ) && 'users.php' === $pagenow ) {
+						$action  = isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : ''; //phpcs:ignore
+						$action2 = isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ? sanitize_text_field( wp_unslash( $_REQUEST['action2'] ) ) : ''; //phpcs:ignore
+						// Single delete, bulk delete, and Multisite network delete/remove actions
+						$restricted_actions = array( 'delete', 'deleteuser', 'dodelete', 'remove', 'doremove' );
+						if ( in_array( $action, $restricted_actions, true ) || in_array( $action2, $restricted_actions, true ) ) {
+							$is_blocked = true;
+						}
+						// "Change role to..." dropdown action
+						if ( isset( $_REQUEST['changeit'] ) || ( ! empty( $_REQUEST['new_role'] ) && ! empty( $_REQUEST['users'] ) ) ) { //phpcs:ignore
+							$is_blocked = true;
+						}
+					}
+					if ( $is_blocked ) {
 						wp_die( esc_attr__( "You don't have permission to access this page", 'temporary-login-without-password' ) );
 					}
 
@@ -188,6 +210,7 @@ class Wp_Temporary_Login_Without_Password_Public {
 					);
 
 				}
+ 
 			}
 		}
 
@@ -369,6 +392,51 @@ class Wp_Temporary_Login_Without_Password_Public {
 					return $redirect_to_url;
 				}
 			}
+		}
+	}
+
+
+	/**
+	 * Block user creation, updating, and deletion via REST API for temporary users.
+	 *
+	 * @param mixed           $result  Response object.
+	 * @param WP_REST_Server  $server  Server instance.
+	 * @param WP_REST_Request $request Request object.
+	 * @return mixed|WP_Error
+	 */
+	public function restrict_temporary_user_rest_api( $result, $server, $request ) {
+		if ( ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+			return $result;
+		}
+
+		$route  = $request->get_route();
+		$method = $request->get_method();
+
+		// Match /wp/v2/users and sub-routes (e.g. /wp/v2/users/<id>) for create/update/delete
+		if ( 0 === strpos( strtolower( $route ), '/wp/v2/users' ) && in_array( $method, array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( "You don't have permission to access this page", 'temporary-login-without-password' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Block user-management AJAX actions for temporary users.
+	 */
+	public function restrict_temporary_user_ajax_actions() {
+		if ( ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) || ! Wp_Temporary_Login_Without_Password_Common::is_current_user_valid_temporary_user() ) {
+			return;
+		}
+
+		$action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+		$blocked_ajax_actions = array( 'add-user', 'create-user', 'delete-user' );
+
+		if ( in_array( $action, $blocked_ajax_actions, true ) ) {
+			wp_die( esc_attr__( "You don't have permission to access this page", 'temporary-login-without-password' ) );
 		}
 	}
 

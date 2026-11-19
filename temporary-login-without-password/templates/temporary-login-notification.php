@@ -6,6 +6,10 @@
  * @var string  $expiry_time The expiry time for the temporary login.
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! isset( $wtlwp_user, $expiry_time ) ) {
 	return;
 }

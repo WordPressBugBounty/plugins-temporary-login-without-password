@@ -6,6 +6,10 @@
  * Time: 14:57
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $system_info = new Wtlwp_Sytem_Info();
 
 ?>

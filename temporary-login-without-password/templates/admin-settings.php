@@ -4,7 +4,10 @@
  *
  * @package Temporary Login Without Password
  */
- 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Filter to render custom tab 
  */

@@ -1,9 +1,9 @@
 === Temporary Login Without Password ===
-Contributors: storeapps, icegram, niravmehta, sandhyam, mansi-shah
+Contributors: storeapps, icegram, niravmehta, sandhyam, mansi-shah, sachinpunde, jaysoni, mdivyesh3851
 Tags: temporary admin access, passwordless login, guest login, developer access, expiring login
 Requires at least: 3.0.1
 Tested up to: 7.1
-Stable tag: 1.9.10
+Stable tag: 1.9.11
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -152,14 +152,15 @@ Yes. On Multisite, a Super Admin can create a temporary Super Admin account, and
 
 == Upgrade Notice ==
 
-= 1.9.10 =
-* New: Added countdown timer showing remaining time until login expires for temporary login users
-* New: Added support for custom post types in the after-login redirection URL
-* Improvements: Restricted available plugin-related actions for temporary login users
-* Improvements: Added search, filters, and bulk delete options to Activity Logs
-* Update: Improved plugin UI
+= 1.9.11 =
+* New: Added IP address restriction for temporary logins
+* Improvements: Improved security and code quality
 
 == Changelog ==
+
+**1.9.11 [2026-11-19]**
+* New: Added IP address restriction for temporary logins
+* Improvements: Improved security and code quality
 
 **1.9.10 [2026-10-01]**
 

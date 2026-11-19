@@ -5,15 +5,19 @@
  * @package Temporary Login Without Password
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 ?>
 <p class="text-base tracking-wide font-medium"> <?php echo esc_html__( 'Create a new Temporary Login', 'temporary-login-without-password' ); ?></h2>
 <form method="post">
 	<table class="form-table bg-white rounded-lg shadow-md">
 		<tr class="form-field form-required pt-2">
-			<th scope="row" class="wtlwp-form-row pt-2">
+			<th scope="row" class="wtlwp-form-row pt-10">
 				<label for="user_email"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Email*', 'temporary-login-without-password' ); ?> </span></label>
 			</th>
-			<td class="pt-2">
+			<td class="pt-10">
 				<input name="wtlwp_data[user_email]" type="text" id="user_email" value="" aria-required="true" maxlength="60" class="wtlwp-form-input form-input"/>
 			</td>
 		</tr>
@@ -98,6 +102,39 @@
 					</span>
 				</td>
 			</tr>
+
+			<tr class="form-field">
+				<th scope="row" class="wtlwp-form-row">
+					<label for="tlwp-allowed-ips">
+						<span class="text-sm font-medium text-gray-600 pb-2">
+							<?php echo esc_html__( 'Allowed IP Addresses', 'temporary-login-without-password' ); ?>
+						</span>
+					</label>
+					<p class="italic text-xs text-gray-400 mt-1 font-normal leading-snug">
+						<?php echo esc_html__( 'Leave blank for no restriction', 'temporary-login-without-password' ); ?>
+					</p>
+				</th>
+				<td>
+					<input 
+						type="text" 
+						name="wtlwp_data[allowed_ips]" 
+						id="tlwp-allowed-ips" 
+						class="wtlwp-form-input form-input w-full"
+						placeholder="<?php echo esc_attr__('e.g. 123.45.67.89, 10.0.0.1', 'temporary-login-without-password'); ?>"
+						value=""
+					/>
+					<p class="text-xs text-blue-600 mt-2 cursor-pointer hover:text-blue-800 tlwp-use-current-ip-btn">
+						<span class="dashicons dashicons-location mt-1" style="font-size: 14px; vertical-align: middle;"></span>
+						<?php 
+						printf(
+							/* translators: %s: User's current IP address */
+							esc_html__('Use my current IP: %s', 'temporary-login-without-password'),
+							'<strong class="tlwp-current-user-ip-value">' . esc_html(Wp_Temporary_Login_Without_Password_Common::get_client_ip()) . '</strong>'
+						);
+						?>
+					</p>
+				</td>
+			</tr>
 			<?php 
 		} else { ?>
 			<tr class="form-field">
@@ -105,7 +142,7 @@
 					<label for="max-login-limit"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Max Login Limit', 'temporary-login-without-password' ); ?></span></label>
 				</th>
 				<td>
-					<a href="<?php echo admin_url( 'users.php?page=wp-temporary-login-without-password&tab=tlwp-pricing' );?>" id="wtlwp-max-login-upsale">
+					<a href="<?php echo admin_url( 'users.php?page=wp-temporary-login-without-password&tab=tlwp-pricing' );?>" id="wtlwp-max-login-upsale-field">
 						<div style="display: flex; cursor: pointer">
 							<input 
 							type="number" 
@@ -120,7 +157,8 @@
 				</td>
 			</tr>
 			<?php 
-		}?>
+		}?> 
+
 		<tr class="form-field">
 			<th scope="row" class="wtlwp-form-row">
 				<label for="language"><span class="text-sm font-medium text-gray-600 pb-2"><?php echo esc_html__( 'Language', 'temporary-login-without-password' ); ?></span></label>

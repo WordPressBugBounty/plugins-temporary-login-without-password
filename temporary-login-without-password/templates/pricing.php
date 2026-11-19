@@ -1,5 +1,9 @@
 <?php
-$utm_campaign = get_option('wtlwp_upsell_flow') == 'max-login-field' ? 'max-login' : 'pricing-page';
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$utm_campaign = get_option('wtlwp_upsell_flow') == 'max-login-field' ? 'max-login' : (get_option('wtlwp_upsell_flow') == 'admin-promotional-notice' ? 'promotional-notice' : 'pricing-page');
 ?>
 <div class="bg-white rounded-lg shadow-md pt-2 pb-10">
     <div class="container w-full mt-4 mb-7">

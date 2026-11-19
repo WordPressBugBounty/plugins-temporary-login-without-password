@@ -143,6 +143,11 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 				$locale = ! empty( $data['locale'] ) ? $data['locale'] : 'en_US';
 				update_user_meta( $user_id, 'locale', $locale );
 
+				if (Wp_Temporary_Login_Without_Password::is_pro()) {
+					$allowed_ips = !empty($data['allowed_ips']) ? self::sanitize_ip_list($data['allowed_ips']) : '';
+					update_user_meta($user_id, '_wtlwp_allowed_ips', $allowed_ips);
+				}
+
 				// if ( $is_one_click ) {
 				// update_user_meta( $user_id, '_wtlwp_is_one_click', true );
 				// }
@@ -197,6 +202,11 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 
 			if ( is_multisite() && is_super_admin() && ! empty( $data['super_admin'] ) && 'on' === $data['super_admin'] ) {
 				grant_super_admin( $user_id );
+			}
+
+			if (Wp_Temporary_Login_Without_Password::is_pro() && isset($data['allowed_ips'])) {
+				$allowed_ips = self::sanitize_ip_list($data['allowed_ips']);
+				update_user_meta($user_id, '_wtlwp_allowed_ips', $allowed_ips);
 			}
 
 			update_user_meta( $user_id, '_wtlwp_updated', self::get_current_gmt_timestamp() );
@@ -987,6 +997,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 					$wtlwp_token = get_user_meta( $user_id, '_wtlwp_token', true );
 					$redirect_to = get_user_meta( $user_id, '_wtlwp_redirect_to', true );
 					$user_locale = get_user_meta( $user_id, 'locale', true );
+					$allowed_ips = get_user_meta( $user_id, '_wtlwp_allowed_ips', true);
 
 					$user_data = array(
 					'is_tlwp_user'   => $is_tlwp_user,
@@ -999,7 +1010,8 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
 					'wtlwp_token'    => $wtlwp_token,
 					'role'           => $role,
 					'locale'         => $user_locale,
-					'redirect_to'    => $redirect_to
+					'redirect_to'    => $redirect_to,
+					'allowed_ips'     => $allowed_ips
 					);
 				}
 
@@ -1461,6 +1473,110 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Common' ) ) {
             return ($is_tlwp_user) ? true : false;
         }
 
+		/**
+		 * Get client's IP address
+		 *
+		 * @return string
+		 * @since 1.9.8
+		 */
+		public static function get_client_ip() {
+			$ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+			return sanitize_text_field($ip);
+		}
+
+
+		/**
+		 * Check if IP matches allowed IP list (exact match only, comma-separated)
+		 *
+		 * @param string $client_ip Current user's IP
+		 * @param string $allowed_ips Comma-separated list of allowed IPs
+		 * @return bool
+		 * @since 1.9.8
+		 */
+		public static function is_ip_allowed( $client_ip, $allowed_ips ) {
+			
+			// No restriction set = allow all 
+			$allowed_ips = trim($allowed_ips);
+			if (empty($allowed_ips)) {
+				return true;
+			} 
+			
+			// Convert comma-separated string to array
+			$allowed_ips_array = array_map('trim', explode(',', $allowed_ips));
+			
+			// Remove empty values
+			$allowed_ips_array = array_filter($allowed_ips_array);
+			
+			return in_array($client_ip, $allowed_ips_array, true); 
+		}
+
+		/**
+		 * Validate and sanitize comma-separated IP list
+		 *
+		 * @param string $ip_list Comma-separated IP addresses
+		 * @return string Sanitized IP list or empty string if all invalid
+		 * @since 1.9.8
+		 */
+		public static function sanitize_ip_list( $ip_list ) {
+			
+			if (empty($ip_list)) {
+				return '';
+			}
+			
+			// Split by comma
+			$ips = array_map('trim', explode(',', $ip_list));
+			$valid_ips = array();
+			
+			foreach ($ips as $ip) {
+				// Skip empty entries
+				if (empty($ip)) {
+					continue;
+				}
+				
+				// Validate IP format and avoid duplicates
+				if ( filter_var( $ip, FILTER_VALIDATE_IP ) && ! in_array( $ip, $valid_ips, true ) ) {
+					$valid_ips[] = $ip;
+				}
+			}
+			
+			// Return comma-separated valid unique IPs
+			return implode(', ', $valid_ips);
+		}
+
+		/**
+		 * Validate comma-separated IP list
+		 *
+		 * @param string $ip_list Comma-separated IP addresses
+		 * @return bool True if all IPs are valid or list is empty, false if any IP is invalid
+		 * @since 1.9.8
+		 */
+		public static function validate_ip_list( $ip_list ) {
+
+			if ( empty( $ip_list ) ) {
+				return true;
+			}
+
+			if ( ! is_string( $ip_list ) ) {
+				return false;
+			}
+
+			// Split by comma
+			$ips = array_map( 'trim', explode( ',', $ip_list ) );
+
+			foreach ( $ips as $ip ) {
+				// Skip empty entries
+				if ( '' === $ip ) {
+					continue;
+				}
+
+				// Validate IP format
+				if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+					return false;
+				}
+			}
+
+			return true;
+		}
 
 		/**
 		 * 

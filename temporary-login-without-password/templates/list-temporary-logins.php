@@ -5,6 +5,10 @@
  * @package Temporary Login Without Password
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; 
+}
+
 ?>
 <table class="wp-list-table shadow rounded-lg overflow-hidden w-full">
 	<thead>

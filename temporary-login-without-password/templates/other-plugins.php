@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 global $tlwp_tracker, $tlwp_feedback;
 
 $es_install_url            = admin_url( 'plugin-install.php?s=email+subscribers&tab=search&type=term' );

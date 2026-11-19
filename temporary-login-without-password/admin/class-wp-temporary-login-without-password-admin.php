@@ -307,6 +307,8 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 				$result['message'] = 'not_valid_email';
 			} elseif ( ! empty( $data['user_email'] ) && email_exists( $data['user_email'] ) ) {
 				$result['message'] = 'email_is_in_use';
+			} elseif ( ! empty( $_POST['wtlwp_data']['allowed_ips'] ) && ! Wp_Temporary_Login_Without_Password_Common::validate_ip_list( sanitize_text_field( wp_unslash( $_POST['wtlwp_data']['allowed_ips'] ) ) ) ) {
+				$result['message'] = 'invalid_ip_address';
 			} else {
 				$error = false;
 			}
@@ -611,22 +613,29 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 					}
 				} elseif ( 'update' === $action ) {
 
-					$data = ! empty( $_POST['wtlwp_data'] ) ? self::sanitize_data( $_POST['wtlwp_data'] ) : array();
-
-					$target_user_id = absint( $user_id );
-
-					$update = Wp_Temporary_Login_Without_Password_Common::update_user( $target_user_id, $data );
-
-					if ( $update ) {
+					if ( ! empty( $_POST['wtlwp_data']['allowed_ips'] ) && ! Wp_Temporary_Login_Without_Password_Common::validate_ip_list( sanitize_text_field( wp_unslash( $_POST['wtlwp_data']['allowed_ips'] ) ) ) ) {
 						$result = array(
-						'status'  => 'success',
-						'message' => 'user_updated',
+							'status'  => 'error',
+							'message' => 'invalid_ip_address',
 						);
 					} else {
-						$result = array(
-						'status'  => 'error',
-						'message' => 'default_error_message',
-						);
+						$data = ! empty( $_POST['wtlwp_data'] ) ? self::sanitize_data( $_POST['wtlwp_data'] ) : array();
+
+						$target_user_id = absint( $user_id );
+
+						$update = Wp_Temporary_Login_Without_Password_Common::update_user( $target_user_id, $data );
+
+						if ( $update ) {
+							$result = array(
+							'status'  => 'success',
+							'message' => 'user_updated',
+							);
+						} else {
+							$result = array(
+							'status'  => 'error',
+							'message' => 'default_error_message',
+							);
+						}
 					}
 				} else {
 					$result = array(
@@ -658,6 +667,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			'email_is_in_use'         => __( 'Email is already in use', 'temporary-login-without-password' ),
 			'empty_email'             => __( 'Please enter valid email address. Email field should not be empty', 'temporary-login-without-password' ),
 			'not_valid_email'         => __( 'Please enter valid email address', 'temporary-login-without-password' ),
+			'invalid_ip_address'      => __( 'Please enter valid IP address', 'temporary-login-without-password' ),
 			'is_not_temporary_login'  => __( 'User you are trying to delete is not temporary', 'temporary-login-without-password' ),
 			'nonce_failed'            => __( 'Nonce failed', 'temporary-login-without-password' ),
 			'invalid_action'          => __( 'Invalid action', 'temporary-login-without-password' ),
@@ -723,6 +733,12 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 
 		public function tlwp_show_promotion_notice() {
 
+			$screen = get_current_screen();
+
+			if ( $screen->base === 'users_page_wp-temporary-login-without-password' && isset($_GET['tab']) && sanitize_key(wp_unslash($_GET['tab'])) === 'tlwp-pricing' ) {
+				return;
+			}
+
 			if ( ! Wp_Temporary_Login_Without_Password_Common::is_tlwp_admin_page() ) {
 				return;
 			}
@@ -735,22 +751,123 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 				return;
 			}
 
-			/* translators: 1. Anchor start tag 2. Anchor close tag */
-			$promotion_optin_link = sprintf(__( ' %1$sGo Pro – More Power, Less Limits!%2$s', 'temporary-login-without-password' ), "<a class='wtlwp-promo-link text-indigo-600 font-bold' href='" . esc_url('https://www.icegram.com/temporary-login-without-password/?utm_source=in-app&utm_medium=admin-notice&utm_campaign=launch-promotion') . "' target='_blank'><b>", '</b></a>' );
+			$promotion_notices = array(
+				array(
+					'title'       => __( 'Get Notified When a Temporary Login Is Used', 'temporary-login-without-password' ),
+					'description' => __( 'Receive an email alert whenever a temporary user logs in. Stay informed and keep track of access to your site.', 'temporary-login-without-password' ),
+					'button'      => __( 'Get Pro 🚀', 'temporary-login-without-password' ),
+				),
+				array(
+					'title'       => __( 'Limit How Many Times a Login Link Can Be Used', 'temporary-login-without-password' ),
+					'description' => __( 'Set a usage limit for temporary login links to prevent repeated or unwanted access.', 'temporary-login-without-password' ),
+					'button'      => __( 'Upgrade to Pro 🚀', 'temporary-login-without-password' ),
+				),
+				array(
+					'title'       => __( 'Track Temporary User Activity', 'temporary-login-without-password' ),
+					'description' => __( 'See when temporary users log in and track their activity with a detailed history—useful for monitoring and troubleshooting.', 'temporary-login-without-password' ),
+					'button'      => __( 'Get Pro 🚀', 'temporary-login-without-password' ),
+				),
+			);
 
-			$promotion_plugin_name = sprintf(__( ' %1$sTemporary Login Without Password%2$s', 'temporary-login-without-password' ), '<b>', '</b>' );
+			// Select a random notice on every page load.
+			$promotion_notice = $promotion_notices[ array_rand( $promotion_notices ) ];
+
+			$promotion_optin_link = sprintf(
+				'<a class="wtlwp-promo-link text-indigo-600 font-bold" id="wtlwp-max-login-upsale-notice" data-tlwp-promotional="admin-promotional-notice" href="%s" target="_blank"><b>%s</b></a>',
+				esc_url( admin_url('users.php?page=wp-temporary-login-without-password&tab=tlwp-pricing')),
+				esc_html( $promotion_notice['button'] )
+			);
 
 			?>
-			<div class="notice notice-success is-dismissible" id="wtlwp-promotion-custom-notice">
-				<p>
-					<?php
-						echo sprintf( esc_html__( "Launch new %1\$s plugin's pro plan. %2\$s 🚀", 'temporary-login-without-password' ), wp_kses_post( $promotion_plugin_name ), wp_kses_post( $promotion_optin_link ) );
-					?>
-				</p>
-				
+			<style>
+				.wtlwp-promotion-notice {
+					position: relative;
+					padding: 16px 40px 16px 16px;
+					margin: 15px 0;
+					border-left: 4px solid #46b450;
+					background: #fff;
+					box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+				}
+
+				.wtlwp-promotion-notice-content {
+					max-width: 100%;
+				}
+
+				.wtlwp-promotion-notice-title {
+					margin: 0 0 8px;
+					font-size: 16px;
+					line-height: 1.5;
+					color: #1d2327;
+				}
+
+				.wtlwp-promotion-notice-title strong {
+					font-weight: 600;
+				}
+
+				.wtlwp-promotion-notice-description {
+					margin: 0 0 14px;
+					font-size: 14px;
+					line-height: 1.6;
+					color: #50575e;
+				}
+
+				.wtlwp-promotion-notice-action {
+					margin-top: 10px;
+				}
+
+				.wtlwp-promotion-notice-button {
+					display: inline-block;
+					padding: 8px 14px;
+					border: 0;
+					border-radius: 4px;
+					background: #4f46e5;
+					color: #fff;
+					font-size: 14px;
+					font-weight: 500;
+					line-height: 1.4;
+					cursor: pointer;
+					text-decoration: none;
+					transition: background-color 0.2s ease;
+				}
+
+				.wtlwp-promotion-notice-button:hover,
+				.wtlwp-promotion-notice-button:focus {
+					background: #4338ca;
+					color: #fff;
+				}
+
+				.wtlwp-promotion-notice-button:focus {
+					outline: 2px solid #4f46e5;
+					outline-offset: 2px;
+				}
+			</style>
+			<div class="notice notice-success is-dismissible wtlwp-promotion-notice" id="wtlwp-promotion-custom-notice">
+				<div class="wtlwp-promotion-notice-content">
+					<h3 class="wtlwp-promotion-notice-title">
+						<strong>
+							<?php echo esc_html( $promotion_notice['title'] ); ?>
+						</strong>
+					</h3>
+
+					<p class="wtlwp-promotion-notice-description">
+						<?php echo esc_html( $promotion_notice['description'] ); ?>
+
+						<strong class="wtlwp-promotion-notice-action">
+							<?php echo wp_kses_post( $promotion_optin_link ); ?>
+						</strong>
+					</p>
+				</div>
 			</div>
 			<script type="text/javascript">
 				jQuery(document).ready(function($) {
+					setTimeout(function() {
+						var $notice = $('#wtlwp-promotion-custom-notice');
+
+						if ($notice.length && $('#temporary-logins').length) {
+							$notice.prependTo('#wpbody-content');
+						}
+					}, 500);
+
 					$('#wtlwp-promotion-custom-notice').on('click', '.notice-dismiss, .wtlwp-promo-link', function() {
 						$.ajax({
 							method: 'POST',
@@ -769,23 +886,33 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			<?php
 		}
 
-	 // Sanitize the data array
+	 	// Sanitize the data array
 		public static function sanitize_data( $data ) {
 			if ( is_array( $data ) ) {
 				foreach ( $data as $key => $value ) {
-					$data[ $key ] = sanitize_text_field( wp_unslash( $value ) );
-				}
+					if ( 'allowed_ips' === $key ) {
+						$data[$key] = Wp_Temporary_Login_Without_Password_Common::sanitize_ip_list($value);
+					} else {
+						$data[$key] = sanitize_text_field( wp_unslash( $value ) );
+					}									}
 			} else {
 				$data = sanitize_text_field( wp_unslash( $data ) );
 			}
 			return $data;
 		}
+
 		public function tlwp_dismiss_promo_custom_notice() {
 			$response = array(
 			'status' => 'success',
 			);
-	
+
 			check_ajax_referer( 'tlwp-promo-dismiss-action', 'security' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(
+					array( 'message' => esc_html__( 'Permission denied.', 'temporary-login-without-password' ) )
+				);
+			}
 	
 			update_option( 'tlwp_close_promotion_notice', 'yes', false );
 	
@@ -1499,6 +1626,8 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			'tlwp_show_feature_survey',
 			'in_app_offer',
 			'show_tlwp_mailer_promotion_notice',
+			'tlwp_show_promotion_notice',
+			'tlwp_show_offer_notice',
 			);
 
 			$filters = array(
@@ -1645,7 +1774,7 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 
 			$flow = isset( $_POST['flow'] ) ? sanitize_text_field( wp_unslash( $_POST['flow'] ) ) : '';
 
-			if ( 'max-login-field' === $flow ) {
+			if ( in_array($flow, array( 'max-login-field', 'admin-promotional-notice' ), true ) ) {
 				update_option( 'wtlwp_upsell_flow', $flow, false );
 				wp_send_json_success();
 			}
@@ -1653,6 +1782,73 @@ if ( ! class_exists( 'Wp_Temporary_Login_Without_Password_Admin' ) ) {
 			wp_send_json_error(
 				array( 'message' => esc_html__( 'Failed to complete action.', 'temporary-login-without-password' ) )
 			);
+		}
+
+		/**
+		 * Check if offer period is active
+		 *
+		 * @param string $offer_name Offer slug.
+		 * @return boolean
+		 */
+		public static function is_offer_period( $offer_name = '' ) {
+			$is_offer_period = false;
+			if ( ! empty( $offer_name ) ) {
+				$current_utc_time = time();
+				$current_ist_time = $current_utc_time + ( 5.5 * HOUR_IN_SECONDS ); // IST offset
+				$offer_start_time = $current_ist_time;
+				$offer_end_time   = $current_ist_time;
+				if ( 'bfcm' === $offer_name ) {
+					$offer_start_time = strtotime( '2026-11-18 12:30:00' ); // Offer start in IST
+					$offer_end_time   = strtotime( '2026-11-30 23:59:59' ); // Offer end in IST
+				}
+				$is_offer_period = ( $current_ist_time >= $offer_start_time && $current_ist_time <= $offer_end_time );
+			}
+			return $is_offer_period;
+		}
+
+
+		/**
+		 * Display BFCM offer banner
+		 */
+		public function tlwp_show_offer_notice() {
+			if ( ! Wp_Temporary_Login_Without_Password_Common::is_tlwp_admin_page() ) {
+				return;
+			}
+			$screen = get_current_screen();
+			
+			if ( $screen && 'users_page_wp-temporary-login-without-password' === $screen->base && isset( $_GET['tab'] ) && 'tlwp-pricing' === $_GET['tab'] ) {
+				return;
+			}
+			
+			if ( file_exists( WTLWP_PLUGIN_DIR . '/templates/ig-offer.php' ) ) {
+				include_once WTLWP_PLUGIN_DIR . '/templates/ig-offer.php';
+			}
+		}
+
+		/**
+		 * Dismiss notice and redirect to offer URL
+		 */
+		public function dismiss_admin_notice() {
+			if ( ! isset( $_GET['wtlwp_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['wtlwp_nonce'] ) ), 'wtlwp_dismiss_notice' ) ) {
+				return;
+			}
+			if ( isset( $_GET['wtlwp_dismiss_admin_notice'] ) && '1' === $_GET['wtlwp_dismiss_admin_notice'] && isset( $_GET['wtlwp_option_name'] ) ) {
+				$option_name = sanitize_text_field( wp_unslash( $_GET['wtlwp_option_name'] ) );
+				$allowed_options = array(
+					'ig_offer_bfcm_2026',
+				);
+				if ( ! in_array( $option_name, $allowed_options, true ) ) {
+					return;
+				}
+				// Mark as dismissed for TLWP
+				update_option( $option_name . '_wtlwp', 'yes', false );
+				if ( 'ig_offer_bfcm_2026' === $option_name ) {
+					// Change this URL to your target BFCM redirect link with UTM tags
+					$url = 'https://www.icegram.com/coupon-code/bfcm-50-2026/?buy-now=445245&qty=1&with-cart=1&utm_source=in-app&utm_medium=banner&utm_campaign=bfcm-2026-tlwp';
+					header( "Location: {$url}" );
+					exit();
+				}
+			}
 		}
 
 	}
